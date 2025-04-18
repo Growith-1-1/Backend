@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface AccountBookRepository extends JpaRepository<AccountBook, Long> {
     Optional<AccountBook> findByIdAndUserId(Long id, Long userId);
 
-    List<AccountBook> findAllByUserIdAndType(Long userId, CategoryType type);
+    List<AccountBook> findAllByUserIdAndTypeOrderByUpdatedAtDesc(Long userId, CategoryType type);
 
     @Query("""
             SELECT new dev.book.accountbook.dto.response.AccountBookStatResponse(a.category, SUM(a.amount))
@@ -37,6 +37,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                   AND a.type = :categoryType
                   AND a.category = :category
             AND a.updatedAt BETWEEN :startDate AND :endDate
+                        ORDER BY a.updatedAt DESC
             """)
     List<AccountBook> findByCategory(Long userId, CategoryType categoryType, Category category, LocalDateTime startDate, LocalDateTime endDate);
 
@@ -56,5 +57,5 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             @Param("endDate") LocalDateTime endDate
     );
 
-    List<AccountBook> findByUserIdAndCategory(Long userId, Category category);
+    List<AccountBook> findByUserIdAndCategoryOrderByUpdatedAtDescIdDesc(Long userId, Category category);
 }

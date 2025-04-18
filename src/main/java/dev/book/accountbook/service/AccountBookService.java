@@ -33,7 +33,7 @@ public class AccountBookService {
     }
 
     public List<AccountBookSpendResponse> getSpendList(Long userId) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndType(userId, CategoryType.SPEND);
+        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndTypeOrderByUpdatedAtDesc(userId, CategoryType.SPEND);
 
         return accountBooks.stream()
                 .map(AccountBookSpendResponse::from)
@@ -71,7 +71,7 @@ public class AccountBookService {
     }
 
     public List<AccountBookIncomeResponse> getIncomeList(Long userId) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndType(userId, CategoryType.INCOME);
+        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndTypeOrderByUpdatedAtDesc(userId, CategoryType.INCOME);
 
         return accountBooks.stream()
                 .map(AccountBookIncomeResponse::from)
@@ -101,7 +101,7 @@ public class AccountBookService {
     }
 
     public List<AccountBookSpendResponse> getCategorySpendList(Category category, Long userId) {
-        List<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategory(userId, category);
+        List<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryOrderByUpdatedAtDescIdDesc(userId, category);
 
         return categorySpendList.stream()
                 .map(AccountBookSpendResponse::from)
