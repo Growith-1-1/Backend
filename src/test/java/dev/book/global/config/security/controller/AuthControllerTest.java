@@ -1,20 +1,14 @@
 package dev.book.global.config.security.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.book.accountbook.type.Category;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import dev.book.global.config.security.dto.TokenDto;
 import dev.book.global.config.security.jwt.JwtAuthenticationToken;
 import dev.book.global.config.security.jwt.JwtUtil;
 import dev.book.user.dto.request.UserSignUpRequest;
 import dev.book.user.entity.UserEntity;
-import dev.book.user.exception.UserErrorCode;
-import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,13 +17,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,7 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
-import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,13 +62,13 @@ class AuthControllerTest {
     private HttpServletResponse response;
 
     @BeforeEach
-    public void mockMvcSetUp(){
+    public void mockMvcSetUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .build();
     }
 
     @AfterEach
-    public void cleanUp(){
+    public void cleanUp() {
         SecurityContextHolder.clearContext();
         userRepository.deleteAll();
     }
@@ -84,7 +76,7 @@ class AuthControllerTest {
     CustomUserDetails userDetails;
 
     @BeforeEach
-    void setSecurityContext(){
+    void setSecurityContext() {
         UserEntity user = userRepository.save(UserEntity.builder()
                 .email("test@test.com")
                 .nickname("")
@@ -104,7 +96,7 @@ class AuthControllerTest {
 
         final ResultActions result = mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new UserSignUpRequest("test@test.com", "nickname", "category"))));
+                .content(objectMapper.writeValueAsString(new UserSignUpRequest( "nickname", List.of(Category.HOBBY)))));
 
         result.andExpect(status().isCreated());
 
@@ -203,7 +195,7 @@ class AuthControllerTest {
     @WithMockUser(username = "test@test.com")
     @DisplayName("validationTest : 토큰의 유효성 검사")
     @Test
-    public void validationTest(){
+    public void validationTest() {
 
         Authentication authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities());
         TokenDto tokenDto = jwtUtil.generateToken(response, authentication);

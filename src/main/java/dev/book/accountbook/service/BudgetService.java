@@ -69,6 +69,7 @@ public class BudgetService {
         return budgetRepository.findBudgetWithTotal(userId);
     }
 
+    @Transactional
     public void deleteBudget(Long userId, Long id) {
         Budget budget = findBudgetIdAndUserId(id, userId);
         budgetRepository.deleteById(budget.getId());
