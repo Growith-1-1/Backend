@@ -17,15 +17,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 @Tag(name = "AccountBook", description = "지출 / 수입 등록, 수정, 삭제, 조회")
-@RequestMapping("/api/v1/account-book")
 public interface AccountBookApi {
 
-    @GetMapping("/spend")
     @Operation(summary = "지출 목록 조회", description = "유저 ID로 지출을 조회합니다.")
     @ApiResponse(
             responseCode = "200",
@@ -65,7 +64,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<List<AccountBookSpendResponse>> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @GetMapping("/spend/{id}")
     @Operation(summary = "지출 상제 조회", description = "지출 ID를 이용해 지출을 상제 조회합니다.")
     @Parameter(name = "id", description = "지출 id", example = "1")
     @ApiResponse(
@@ -93,7 +91,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookSpendResponse> getSpendOne(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
-    @PostMapping("/spend")
     @Operation(summary = "지출 등록", description = "일반/정기 지출을 등록합니다.")
     @ApiResponse(
             responseCode = "200",
@@ -124,7 +121,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookSpendResponse> createSpend(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                          @Valid @RequestBody AccountBookSpendRequest request);
-    @PutMapping("/spend/{id}")
     @Operation(summary = "지출 수정", description = "지출 정보를 수정합니다.")
     @Parameter(name = "id", description = "지출 id", example = "1")
     @ApiResponse(
@@ -156,12 +152,10 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookSpendResponse> modifySpend(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody AccountBookSpendRequest request, @PathVariable Long id);
 
-    @DeleteMapping("/spend/{id}")
     @Operation(summary = "지출 삭제", description = "지출 정보를 삭제합니다.")
     @Parameter(name = "id", description = "지출 id", example = "1")
     ResponseEntity<Boolean> deleteSpend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
-    @GetMapping("/income")
     @Operation(summary = "수입 목록 조회", description = "유저 ID를 기반으로 수입 목록을 조회합니다.")
     @ApiResponse(
             responseCode = "200",
@@ -204,7 +198,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<List<AccountBookIncomeResponse>> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @GetMapping("/income/{id}")
     @Parameter(name = "id", description = "수입 ID", example = "1")
     @Operation(summary = "수입 상세 조회", description = "수입 ID를 이용해 수입 상세 정보를 조회합니다.")
     @ApiResponse(
@@ -236,7 +229,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookIncomeResponse> getIncomeOne(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
-    @PostMapping("/income")
     @Operation(summary = "수입 등록", description = "새로운 수입 정보를 등록합니다.")
     @ApiResponse(
             responseCode = "200",
@@ -267,7 +259,6 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookIncomeResponse> createIncome(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody AccountBookIncomeRequest request);
 
-    @PutMapping("/income/{id}")
     @Parameter(name = "id", description = "수입 id", example = "1")
     @Operation(summary = "수입 수정", description = "수입 정보를 수정합니다.")
     @ApiResponse(
@@ -299,12 +290,10 @@ public interface AccountBookApi {
     )
     ResponseEntity<AccountBookIncomeResponse> modifyIncome(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody AccountBookIncomeRequest request, @PathVariable Long id);
 
-    @DeleteMapping("/income/{id}")
     @Parameter(name = "id", description = "수입 id", example = "1")
     @Operation(summary = "수입 삭제", description = "수입 정보를 삭제합니다.")
     ResponseEntity<Boolean> deleteIncome(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
-    @GetMapping("/{category}")
     @Parameter(name = "category", description = "카테고리 이름", example = "food")
     @Operation(summary = "카테고리별 지출 조회", description = "카테고리 이름을 이용해 지출 목록을 조회합니다.")
     @ApiResponse(

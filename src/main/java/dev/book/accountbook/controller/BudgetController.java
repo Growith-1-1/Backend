@@ -8,15 +8,16 @@ import dev.book.global.config.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/budget")
 public class BudgetController implements BudgetApi {
     private final BudgetService budgetService;
 
     @Override
+    @GetMapping
     public ResponseEntity<BudgetResponse> getBudgetList(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.user().getId();
         BudgetResponse response = budgetService.getBudget(userId);
@@ -25,6 +26,7 @@ public class BudgetController implements BudgetApi {
     }
 
     @Override
+    @PostMapping
     public ResponseEntity<BudgetResponse> createBudget(@AuthenticationPrincipal CustomUserDetails userDetails, BudgetRequest budgetRequest) {
         BudgetResponse response = budgetService.createBudget(userDetails.user(), budgetRequest);
 
@@ -32,6 +34,7 @@ public class BudgetController implements BudgetApi {
     }
 
     @Override
+    @PutMapping("/{id}")
     public ResponseEntity<BudgetResponse> modifyBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, BudgetRequest budgetRequest) {
         Long userId = userDetails.user().getId();
         BudgetResponse response = budgetService.modify(userId, id, budgetRequest);
@@ -40,6 +43,7 @@ public class BudgetController implements BudgetApi {
     }
 
     @Override
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
         Long userId = userDetails.user().getId();
         budgetService.deleteBudget(userId, id);

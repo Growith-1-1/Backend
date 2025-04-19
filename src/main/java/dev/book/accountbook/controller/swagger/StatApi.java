@@ -17,17 +17,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@RequestMapping("/api/v1/stat")
 @Tag(name = "Stat", description = "소비 많은 카테고리 3개 조회, 카테고리 별 소비 항목 조회, 직전 일간 / 주간 / 월간 소비 비교")
 public interface StatApi {
 
-    @GetMapping("/{frequency}")
     @Operation(
             summary = "지출 통계 조회",
             description = "일간, 주간, 월간 중 frequency 값을 기반으로 지출 통계 데이터를 조회합니다."
@@ -63,7 +59,6 @@ public interface StatApi {
     )
     ResponseEntity<List<AccountBookStatResponse>> statList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency);
 
-    @GetMapping("/{frequency}/{category}")
     @Operation(
             summary = "카테고리별 지출 목록 조회",
             description = "주어진 기간(frequency)과 카테고리(category)를 기반으로 지출 목록을 조회합니다."
@@ -123,7 +118,6 @@ public interface StatApi {
     )
     ResponseEntity<List<AccountBookSpendResponse>> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @PathVariable Category category);
 
-    @GetMapping("/consume/{frequency}/{category}")
     @Operation(
             summary = "소비 증감량 조회",
             description = """

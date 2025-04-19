@@ -11,13 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
 
-@RequestMapping("/api/v1/budget")
 @Tag(name = "Budget", description = "예산 등록 / 조회")
 public interface BudgetApi {
 
-    @GetMapping
     @Operation(
             summary = "예산 및 소비 총액 조회",
             description = "유저 ID에 해당하는 예산과 해당 월의 총 소비 금액을 조회합니다."
@@ -41,7 +39,6 @@ public interface BudgetApi {
     )
     ResponseEntity<BudgetResponse> getBudgetList(@AuthenticationPrincipal CustomUserDetails userDetails);
 
-    @PostMapping
     @Operation(
             summary = "예산 등록",
             description = "예산을 등록합니다."
@@ -65,7 +62,6 @@ public interface BudgetApi {
     )
     ResponseEntity<BudgetResponse> createBudget(@AuthenticationPrincipal CustomUserDetails userDetails, BudgetRequest budgetRequest);
 
-    @PutMapping("/{id}")
     @Operation(
             summary = "예산 수정",
             description = "예산을 수정합니다."
@@ -89,7 +85,6 @@ public interface BudgetApi {
     )
     ResponseEntity<BudgetResponse> modifyBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, BudgetRequest budgetRequest);
 
-    @DeleteMapping("/{id}")
     @Operation(
             summary = "예산 삭제",
             description = "예산을 삭제합니다."
