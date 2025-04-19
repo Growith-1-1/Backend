@@ -7,7 +7,6 @@ import dev.book.global.entity.BaseTimeEntity;
 import dev.book.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,7 +16,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class AccountBook extends BaseTimeEntity {
 
@@ -40,6 +38,19 @@ public class AccountBook extends BaseTimeEntity {
     private Frequency frequency;
     private Integer month;
     private Integer day;
+
+    public AccountBook(String title, Category category, CategoryType type, int amount, LocalDateTime endDate, String memo, UserEntity user, Frequency frequency, Integer month, Integer day) {
+        this.title = title;
+        this.category = category;
+        this.type = type;
+        this.amount = amount;
+        this.endDate = endDate;
+        this.memo = memo;
+        this.user = user;
+        this.frequency = frequency;
+        this.month = month;
+        this.day = day;
+    }
 
     public void modifyTitle(String title) {
         this.title = title;
