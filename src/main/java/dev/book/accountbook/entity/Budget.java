@@ -1,9 +1,7 @@
 package dev.book.accountbook.entity;
 
 import dev.book.accountbook.entity.middle.BudgetAccountBook;
-import dev.book.accountbook.entity.middle.BudgetCategory;
 import dev.book.global.entity.BaseTimeEntity;
-import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,16 +26,7 @@ public class Budget extends BaseTimeEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BudgetAccountBook> budgetReferences = new ArrayList<>();
-
-    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BudgetCategory> budgetCategories = new ArrayList<>();
-
-    public void addCategory(Category category) {
-        BudgetCategory bc = new BudgetCategory(this, category);
-        this.budgetCategories.add(bc);
-        category.getBudgets().add(bc); // 양방향이면 필요
-    }
+    private List<BudgetAccountBook> budgetAccountBookList = new ArrayList<>();
 
     public Budget(int budgetLimit, int month, UserEntity user) {
         this.budgetLimit = budgetLimit;

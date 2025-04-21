@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record AccountBookIncomeRequest(
 
@@ -16,10 +15,6 @@ public record AccountBookIncomeRequest(
         @Size(max = 50)
         @Schema(description = "수입 제목", example = "월급")
         String title,
-
-        @Schema(description = "카테고리 목록", example = "[\"salary\", \"bonus\"]")
-        List<String> categoryList,
-
         @NotNull
         @Min(10)
         @Max(100000000)
@@ -33,17 +28,16 @@ public record AccountBookIncomeRequest(
         @Schema(description = "수입 종료일 (반복 수입일 경우)", example = "2025-12-31T23:59:59")
         LocalDateTime endDate,
 
-        Repeat repeat
+        Repeat repeat,
+        @Schema(description = "카테고리", example = "food", allowableValues = {
+                "transfer", "salary", "saving_investment"
+        })
+        String category
 
 ) implements AccountBookRequest {
 
     @Override
     public CategoryType categoryType() {
         return CategoryType.INCOME;
-    }
-
-    @Override
-    public List<String> categoryList() {
-        return categoryList;
     }
 }

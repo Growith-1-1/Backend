@@ -40,10 +40,10 @@ public class StatService {
     }
 
     @Transactional
-    public AccountBookConsumeResponse consume(Long userId, Frequency frequency, String category) {
+    public AccountBookConsumeResponse consume(Long userId, Frequency frequency) {
         userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        return getConsume(userId, category, frequency.calcPeriod());
+        return getConsume(userId, frequency.calcPeriod());
     }
 
     private List<AccountBookStatResponse> getStatList(Long userId, LocalDateTime startDate) {
@@ -59,9 +59,9 @@ public class StatService {
                 .toList();
     }
 
-    private AccountBookConsumeResponse getConsume(Long userId, String category, PeriodRange period) {
-        Integer thisAmount = accountBookRepository.sumSpending(userId, CategoryType.SPEND, category, period.currentStart(), period.currentEnd());
-        Integer lastAmount = accountBookRepository.sumSpending(userId, CategoryType.SPEND, category, period.previousStart(), period.previousEnd());
+    private AccountBookConsumeResponse getConsume(Long userId, PeriodRange period) {
+        Integer thisAmount = accountBookRepository.sumSpending(userId, CategoryType.SPEND, period.currentStart(), period.currentEnd());
+        Integer lastAmount = accountBookRepository.sumSpending(userId, CategoryType.SPEND, period.previousStart(), period.previousEnd());
 
         return new AccountBookConsumeResponse(lastAmount - thisAmount);
     }

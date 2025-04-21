@@ -19,17 +19,17 @@ import java.util.Optional;
 public interface AccountBookRepository extends JpaRepository<AccountBook, Long> {
     Optional<AccountBook> findByIdAndUserId(Long id, Long userId);
 
-    List<AccountBook> findAllByUserIdAndTypeOrderByUpdatedAtDesc(Long userId, CategoryType type);
+    @EntityGraph(attributePaths = {"category"})
+    List<AccountBook> findAllByUserIdAndTypeAndCategoryIsNotNullOrderByUpdatedAtDesc(Long userId, CategoryType type);
 
     @Query("""
                 SELECT new dev.book.accountbook.dto.response.AccountBookStatResponse(c.korean, SUM(ab.amount))
                 FROM AccountBook ab
-                JOIN ab.categoryList abc
-                JOIN abc.category c
-                WHERE ab.user.id = :userId
-                  AND ab.updatedAt BETWEEN :startDate AND :endDate
-                GROUP BY c
-                ORDER BY SUM(ab.amount) DESC
+                    JOIN ab.category c
+                    WHERE ab.user.id = :userId
+                      AND ab.updatedAt BETWEEN :startDate AND :endDate
+                    GROUP BY c.korean
+                    ORDER BY SUM(ab.amount) DESC
             """)
     List<AccountBookStatResponse> findTopCategoriesByUserAndPeriod(
             @Param("userId") Long userId,
@@ -38,12 +38,10 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"categoryList", "categoryList.category"})
     @Query("""
                 SELECT a
                 FROM AccountBook a
-                JOIN a.categoryList abc
-                JOIN abc.category c
+                JOIN a.category c
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
                   AND c.category = :categoryName
@@ -61,27 +59,23 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
     @Query("""
                 SELECT COALESCE(SUM(a.amount), 0)
                 FROM AccountBook a
-                JOIN a.categoryList abc
-                JOIN abc.category c
+                JOIN a.category c
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
-                  AND c.category = :categoryName
                   AND a.updatedAt BETWEEN :startDate AND :endDate
             """)
     Integer sumSpending(
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
-            @Param("categoryName") String categoryName,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
 
-    @EntityGraph(attributePaths = {"categoryList", "categoryList.category"})
+    @EntityGraph(attributePaths = {"category"})
     @Query("""
                 SELECT DISTINCT ab
                 FROM AccountBook ab
-                JOIN ab.categoryList abc
-                JOIN abc.category c
+                JOIN ab.category c
                 WHERE ab.user.id = :userId
                   AND c.korean = :categoryName
                 ORDER BY ab.updatedAt DESC, ab.id DESC

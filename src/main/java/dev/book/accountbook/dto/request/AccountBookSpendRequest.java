@@ -5,16 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record AccountBookSpendRequest(
         @NotBlank
         @Size(max = 50)
         @Schema(description = "지출 이름", example = "핫도그")
         String title,
-
-        @Schema(description = "카테고리", example = "[\"food\", \"shopping\"")
-        List<String> categoryList,
 
         @NotNull
         @Min(10)
@@ -26,18 +22,20 @@ public record AccountBookSpendRequest(
         @Schema(description = "메모", example = "밤에 배고파서 먹은 야식")
         String memo,
 
-        @Schema(description = "정기 지출 종료일", example = "")
+        @Schema(description = "정기 지출 종료일", example = "2025-12-31 23:59:59")
         LocalDateTime endDate,
 
-        Repeat repeat
+        Repeat repeat,
+        @Schema(description = "카테고리", example = "food", allowableValues = {
+                "food", "cafe_snack", "convenience_store", "alcohol_entertainment", "shopping",
+                "hobby", "health", "housing_communication", "finance", "beauty",
+                "transportation", "travel", "education", "living", "donation",
+                "card_payment", "deferred_payment", "none"
+        })
+        String category
 ) implements AccountBookRequest {
     @Override
     public CategoryType categoryType() {
         return CategoryType.SPEND;
-    }
-
-    @Override
-    public List<String> categoryList() {
-        return categoryList;
     }
 }

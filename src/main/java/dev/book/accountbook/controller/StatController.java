@@ -42,10 +42,10 @@ public class StatController implements StatApi {
     }
 
     @Override
-    @GetMapping("/consume/{frequency}/{category}")
-    public ResponseEntity<AccountBookConsumeResponse> consume(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @PathVariable String category) {
+    @GetMapping("/consume/{frequency}")
+    public ResponseEntity<AccountBookConsumeResponse> consume(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency) {
         Long userId = userDetails.user().getId();
-        AccountBookConsumeResponse response = statService.consume(userId, frequency, category);
+        AccountBookConsumeResponse response = statService.consume(userId, frequency);
 
         return ResponseEntity.ok(response);
     }

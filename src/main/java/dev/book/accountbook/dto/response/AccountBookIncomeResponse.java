@@ -4,21 +4,16 @@ import dev.book.accountbook.dto.request.Repeat;
 import dev.book.accountbook.entity.AccountBook;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record AccountBookIncomeResponse(
-        Long id, String title, List<String> categories, int amount, LocalDateTime updatedAt,
+        Long id, String title, String category, int amount, LocalDateTime updatedAt,
         String memo, LocalDateTime endDate, Repeat repeat
 ) {
     public static AccountBookIncomeResponse from(AccountBook entity) {
-        List<String> categoryNames = entity.getCategoryList().stream()
-                .map(abCat -> abCat.getCategory().getCategory())
-                .toList();
-
         return new AccountBookIncomeResponse(
                 entity.getId(),
                 entity.getTitle(),
-                categoryNames,
+                entity.getCategory().getKorean(),
                 entity.getAmount(),
                 entity.getUpdatedAt(),
                 entity.getMemo(),

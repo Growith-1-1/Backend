@@ -3,10 +3,10 @@ package dev.book.accountbook.dto.request;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.accountbook.type.Frequency;
+import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface AccountBookRequest {
     String title();
@@ -15,12 +15,9 @@ public interface AccountBookRequest {
     LocalDateTime endDate();
     Repeat repeat();
     CategoryType categoryType();
+    String category();
 
-    default List<String> categoryList() {
-        return null;
-    }
-
-    default AccountBook toEntity(UserEntity user) {
+    default AccountBook toEntity(UserEntity user, Category category) {
         Frequency frequency = null;
         Integer month = null;
         Integer day = null;
@@ -31,6 +28,6 @@ public interface AccountBookRequest {
             day = repeat().day();
         }
 
-        return new AccountBook(title(), categoryType(), amount(), endDate(), memo(), user, frequency, month, day);
+        return new AccountBook(title(), categoryType(), amount(), endDate(), memo(), user, frequency, month, day, category);
     }
 }
