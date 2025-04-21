@@ -120,25 +120,14 @@ public interface StatApi {
     @Operation(
             summary = "소비 증감량 조회",
             description = """
-        주어진 기간(frequency)과 카테고리(category)를 기준으로,
-        직전 기간 대비 얼마나 더 소비했는지를 반환합니다.
+        주어진 기간(frequency) 직전 기간 대비 얼마나 더 소비했는지를 반환합니다.
 
         예) 4월 소비 - 3월 소비, 이번주 소비 - 저번주 소비, 오늘 소비 - 어제 소비
         """
     )
     @Parameters({
             @Parameter(name = "frequency", description = "비교 기준 기간 (daily, weekly, monthly)", example = "monthly",
-                    schema = @Schema(type = "string", allowableValues = {"daily", "weekly", "monthly"})),
-            @Parameter(name = "category", description = "비교할 카테고리", example = "food",
-                    schema = @Schema(
-                            type = "string",
-                            allowableValues = {
-                                    "food", "cafe_snack", "convenience_store", "alcohol_entertainment", "shopping",
-                                    "hobby", "health", "housing_communication", "finance", "beauty",
-                                    "transportation", "travel", "education", "living", "donation",
-                                    "card_payment", "deferred_payment", "none"
-                            }
-                    ))
+                    schema = @Schema(type = "string", allowableValues = {"daily", "weekly", "monthly"}))
     })
     @ApiResponse(
             responseCode = "200",
@@ -156,5 +145,5 @@ public interface StatApi {
                     )
             )
     )
-    ResponseEntity<AccountBookConsumeResponse> consume(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @PathVariable String category);
+    ResponseEntity<AccountBookConsumeResponse> consume(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency);
 }

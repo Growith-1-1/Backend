@@ -1,6 +1,7 @@
 package dev.book.accountbook.controller.swagger;
 
 import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@Tag(name = "AccountBook", description = "지출 / 수입 등록, 수정, 삭제, 조회")
+@Tag(name = "가계부 API", description = "지출 / 수입 등록, 수정, 삭제, 조회")
 public interface AccountBookApi {
 
     @Operation(summary = "지출 목록 조회", description = "유저 ID로 지출을 조회합니다.")
@@ -336,4 +337,35 @@ public interface AccountBookApi {
             )
     )
     ResponseEntity<List<AccountBookSpendResponse>> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String category);
+
+    @Operation(
+            summary = "지출 목록 생성",
+            description = "지출 목록을 한 번에 등록합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "지출 목록 등록 성공",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = AccountBookSpendResponse.class)),
+                    examples = @ExampleObject(
+                            name = "지출 생성 응답 예시",
+                            value = """
+                                [
+                                  {
+                                    "id": 1,
+                                    "title": "핫도그",
+                                    "category": "food",
+                                    "amount": 2500,
+                                    "updatedAt": "2025-04-17T23:59:59",
+                                    "memo": "밤에 배고파서 먹은 야식",
+                                    "endDate": null,
+                                    "repeat": null
+                                  }
+                                ]
+                                """
+                    )
+            )
+    )
+    ResponseEntity<List<AccountBookSpendResponse>> createSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody AccountBookSpendListRequest requestList);
 }
