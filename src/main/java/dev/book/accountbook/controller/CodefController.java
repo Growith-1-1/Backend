@@ -5,6 +5,7 @@ import dev.book.accountbook.dto.request.CreateConnectedIdRequest;
 import dev.book.accountbook.service.CodefService;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 public class CodefController implements CodefApi {
     private final CodefService codefService;
 
+    @Override
+    @Profile("local")
     @GetMapping("/token")
     public void token() {
         codefService.getAccessToken();
@@ -29,6 +32,8 @@ public class CodefController implements CodefApi {
         return ResponseEntity.ok(success);
     }
 
+    @Override
+    @Profile("local")
     @GetMapping("/trans")
     public ResponseEntity<String> trans(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String decodeList = codefService.getTransactions(userDetails.user());

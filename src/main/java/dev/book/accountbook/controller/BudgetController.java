@@ -27,7 +27,7 @@ public class BudgetController implements BudgetApi {
 
     @Override
     @PostMapping
-    public ResponseEntity<BudgetResponse> createBudget(@AuthenticationPrincipal CustomUserDetails userDetails, BudgetRequest budgetRequest) {
+    public ResponseEntity<BudgetResponse> createBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BudgetRequest budgetRequest) {
         BudgetResponse response = budgetService.createBudget(userDetails.user(), budgetRequest);
 
         return ResponseEntity.ok(response);
@@ -35,7 +35,7 @@ public class BudgetController implements BudgetApi {
 
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<BudgetResponse> modifyBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, BudgetRequest budgetRequest) {
+    public ResponseEntity<BudgetResponse> modifyBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, @RequestBody BudgetRequest budgetRequest) {
         Long userId = userDetails.user().getId();
         BudgetResponse response = budgetService.modify(userId, id, budgetRequest);
 
