@@ -1,5 +1,7 @@
 package dev.book.global.util;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -8,7 +10,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class RsaEncryptUtil {
-    private final static String PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlS+IEdq+VnsVBltibckkyUu+B8wJwPJO/ogJcPtN84tLUOd6HLC2IUGKBboeZtjAXFiuW5K2gnpxusQ/I7U88ttr0BID6cc4oKEnYx2ucHxTq8KjRV7INRNt3o+VufdOQDsVjFRQebrMi/neZZavi/NZOQP6USnDdmC7P1m9HaCHtP4sbCbRXH5oGCQOndzrRNo+9hXRQhtLX/0NDl+mN0SB2zQvur+VqAGhGMHYYfNOQtRphNnF3Me3ODZTVnSXk0GE/cmIaCgUZH7gZ+SnjO+4xw2XmvMyEXr5inzpPWDUpP+mQw+7NU7RJAVbyqzd0jcLERXJXDwDTDzcHf8a/QIDAQAB";
+    @Value("${codef.public_key}")
+    private static String PUBLIC_KEY;
+
     public static String encrypt(String content) {
         try {
             byte[] keyBytes = Base64.getDecoder().decode(PUBLIC_KEY);
