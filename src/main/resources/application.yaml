@@ -10,8 +10,10 @@ spring:
         - oauth2
         - jwt
         - swagger
+        - codef
       prod:
         - prod
         - oauth2
         - jwt
         - swagger
+        - codef
