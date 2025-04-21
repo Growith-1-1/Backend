@@ -2,6 +2,7 @@ package dev.book.accountbook.controller;
 
 import dev.book.accountbook.controller.swagger.AccountBookApi;
 import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
@@ -119,5 +120,13 @@ public class AccountBookController implements AccountBookApi {
         List<AccountBookSpendResponse> responses = accountBookService.getCategorySpendList(category, userId);
 
         return ResponseEntity.ok(responses);
+    }
+
+    @Override
+    @PostMapping("/spend-list")
+    public ResponseEntity<List<AccountBookSpendResponse>> createSpendList(CustomUserDetails userDetails, AccountBookSpendListRequest requestList) {
+        List<AccountBookSpendResponse> spendList = accountBookService.createSpendList(userDetails.user(), requestList);
+
+        return ResponseEntity.ok(spendList);
     }
 }
