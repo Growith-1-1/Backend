@@ -40,15 +40,15 @@ public interface StatApi {
                             value = """
             [
               {
-                "category": "food",
+                "category": "식비",
                 "totalAmount": 15000
               },
               {
-                "category": "cafe_snack",
+                "category": "카페 / 간식",
                 "totalAmount": 8700
               },
               {
-                "category": "hobby",
+                "category": "취미 / 여가",
                 "totalAmount": 5000
               }
             ]
@@ -89,21 +89,23 @@ public interface StatApi {
               {
                 "id": 1,
                 "title": "라면",
-                "category": "food",
+                "category": "식비",
                 "amount": 3500,
                 "updatedAt": "2025-04-15T20:30:00",
                 "memo": "야식",
                 "endDate": null,
+                "occurredAt" : "2025-04-17T23:00:00",
                 "repeat": null
               },
               {
                 "id": 2,
                 "title": "김밥",
-                "category": "food",
+                "category": "식비",
                 "amount": 4500,
                 "updatedAt": "2025-04-16T12:00:00",
                 "memo": "점심",
                 "endDate": null,
+                "occurredAt" : "2025-04-17T23:00:00",
                 "repeat": {
                   "frequency": "monthly",
                   "month": null,
