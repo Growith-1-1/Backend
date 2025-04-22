@@ -25,7 +25,7 @@ public record AccountBookSpendRequest(
         @Schema(description = "정기 지출 종료일", example = "2025-12-31 23:59:59")
         LocalDateTime endDate,
 
-        @NotBlank
+        @NotNull
         @Schema(description = "실제 지출 발생한 시간 수동 입력", example = "2025-04-17T23:00:00")
         LocalDateTime occurredAt,
 
