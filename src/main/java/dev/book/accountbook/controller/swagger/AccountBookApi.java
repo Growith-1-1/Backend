@@ -44,6 +44,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-17T23:59:59",
                                         "memo": "밤에 배고파서 먹은 야식",
                                         "endDate": null,
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": null
                                       },
                                       {
@@ -54,6 +55,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-17T20:30:00",
                                         "memo": "오후 커피",
                                         "endDate": null,
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": null
                                       }
                                     ]
@@ -83,6 +85,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-17T23:59:59",
                                       "memo": "밤에 배고파서 먹은 야식",
                                       "endDate": null,
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": null
                                     }
                                     """
@@ -109,6 +112,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-17T23:59:59",
                                       "memo": "밤에 배고파서 먹은 야식",
                                       "endDate": null,
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": {
                                         "frequency": "monthly",
                                         "month": null,
@@ -141,6 +145,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-17T23:59:59",
                                       "memo": "밤에 배고파서 먹은 야식",
                                       "endDate": null,
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": {
                                         "frequency": "monthly",
                                         "month": null,
@@ -176,6 +181,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-10T23:59:59",
                                         "memo": "4월 정기 급여",
                                         "endDate": "2025-12-31T23:59:59",
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": {
                                           "frequency": "MONTHLY",
                                           "month": null,
@@ -190,6 +196,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-10T10:00:00",
                                         "memo": "적금 이자",
                                         "endDate": null,
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": null
                                       }
                                     ]
@@ -218,6 +225,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-10T23:59:59",
                                       "memo": "4월 정기 급여",
                                       "endDate": "2025-12-31T23:59:59",
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": {
                                         "frequency": "monthly",
                                         "month": null,
@@ -248,6 +256,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-10T23:59:59",
                                       "memo": "4월 정기 급여",
                                       "endDate": "2025-12-31T23:59:59",
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": {
                                         "frequency": "monthly",
                                         "month": null,
@@ -279,6 +288,7 @@ public interface AccountBookApi {
                                       "updatedAt": "2025-04-10T23:59:59",
                                       "memo": "4월 정기 급여",
                                       "endDate": "2025-12-31T23:59:59",
+                                      "occurredAt" : "2025-04-17T23:00:00",
                                       "repeat": {
                                         "frequency": "monthly",
                                         "month": null,
@@ -315,6 +325,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-17T23:59:59",
                                         "memo": "밤에 배고파서 먹은 야식",
                                         "endDate": "2025-12-31T23:59:59",
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": {
                                           "frequency": "yearly",
                                           "month": 4,
@@ -329,6 +340,7 @@ public interface AccountBookApi {
                                         "updatedAt": "2025-04-17T20:30:00",
                                         "memo": "야식은 역시 치킨",
                                         "endDate": null,
+                                        "occurredAt" : "2025-04-17T23:00:00",
                                         "repeat": null
                                       }
                                     ]
@@ -360,6 +372,7 @@ public interface AccountBookApi {
                                     "updatedAt": "2025-04-17T23:59:59",
                                     "memo": "밤에 배고파서 먹은 야식",
                                     "endDate": null,
+                                    "occurredAt" : "2025-04-17T23:00:00",
                                     "repeat": null
                                   }
                                 ]

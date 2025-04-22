@@ -28,6 +28,9 @@ public record AccountBookIncomeRequest(
         @Schema(description = "수입 종료일 (반복 수입일 경우)", example = "2025-12-31T23:59:59")
         LocalDateTime endDate,
 
+        @Schema(description = "실제 수입 발생한 시간 수동 입력", example = "2025-04-23T00:42:39")
+        LocalDateTime occurredAt,
+
         Repeat repeat,
         @Schema(description = "카테고리", example = "food", allowableValues = {
                 "transfer", "salary", "saving_investment"

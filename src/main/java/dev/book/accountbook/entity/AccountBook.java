@@ -31,7 +31,7 @@ public class AccountBook extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
-
+    private LocalDateTime occurredAt;
     @Enumerated(EnumType.STRING)
     private Frequency frequency;
     private Integer month;
@@ -41,7 +41,7 @@ public class AccountBook extends BaseTimeEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public AccountBook(String title, CategoryType type, int amount, LocalDateTime endDate, String memo, UserEntity user, Frequency frequency, Integer month, Integer day, Category category) {
+    public AccountBook(String title, CategoryType type, int amount, LocalDateTime endDate, String memo, UserEntity user, Frequency frequency, Integer month, Integer day, Category category, LocalDateTime occurredAt) {
         this.title = title;
         this.type = type;
         this.amount = amount;
@@ -52,6 +52,7 @@ public class AccountBook extends BaseTimeEntity {
         this.month = month;
         this.day = day;
         this.category = category;
+        this.occurredAt = occurredAt;
     }
 
     public void modifyTitle(String title) {
@@ -84,5 +85,9 @@ public class AccountBook extends BaseTimeEntity {
 
     public void modifyCategory(Category category) {
         this.category = category;
+    }
+
+    public void modifyOccurredAt(LocalDateTime occurredAt) {
+        this.occurredAt = occurredAt;
     }
 }

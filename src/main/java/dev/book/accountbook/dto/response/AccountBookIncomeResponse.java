@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record AccountBookIncomeResponse(
         Long id, String title, String category, int amount, LocalDateTime updatedAt,
-        String memo, LocalDateTime endDate, Repeat repeat
+        String memo, LocalDateTime endDate, LocalDateTime occurredAt, Repeat repeat
 ) {
     public static AccountBookIncomeResponse from(AccountBook entity) {
         return new AccountBookIncomeResponse(
@@ -18,6 +18,7 @@ public record AccountBookIncomeResponse(
                 entity.getUpdatedAt(),
                 entity.getMemo(),
                 entity.getEndDate(),
+                entity.getOccurredAt(),
                 new Repeat(entity.getFrequency(), entity.getMonth(), entity.getDay())
         );
     }

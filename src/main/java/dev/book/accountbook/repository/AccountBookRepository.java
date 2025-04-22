@@ -29,7 +29,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 FROM AccountBook ab
                     JOIN ab.category c
                     WHERE ab.user.id = :userId
-                      AND ab.updatedAt BETWEEN :startDate AND :endDate
+                      AND ab.occurredAt BETWEEN :startDate AND :endDate
                     GROUP BY c.korean
                     ORDER BY SUM(ab.amount) DESC
             """)
@@ -47,8 +47,8 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
                   AND c.category = :categoryName
-                  AND a.updatedAt BETWEEN :startDate AND :endDate
-                ORDER BY a.updatedAt DESC
+                  AND a.occurredAt BETWEEN :startDate AND :endDate
+                ORDER BY a.occurredAt DESC
             """)
     List<AccountBook> findByCategory(
             @Param("userId") Long userId,
@@ -61,10 +61,9 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
     @Query("""
                 SELECT COALESCE(SUM(a.amount), 0)
                 FROM AccountBook a
-                JOIN a.category c
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
-                  AND a.updatedAt BETWEEN :startDate AND :endDate
+                  AND a.occurredAt BETWEEN :startDate AND :endDate
             """)
     Integer sumSpending(
             @Param("userId") Long userId,
@@ -80,7 +79,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 JOIN ab.category c
                 WHERE ab.user.id = :userId
                   AND c.korean = :categoryName
-                ORDER BY ab.updatedAt DESC, ab.id DESC
+                ORDER BY ab.occurredAt DESC, ab.id DESC
             """)
     Page<AccountBook> findByUserIdAndCategoryNameWithGraph(
             @Param("userId") Long userId,
@@ -90,23 +89,23 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
 
 
     @Query("""
-    SELECT new dev.book.challenge.rank.dto.response.RankResponse(
-        u.name,
-        COALESCE(SUM(ab.amount), 0L)
-    )
-    FROM UserEntity u
-    LEFT JOIN AccountBook ab ON ab.user = u 
-        AND ab.type = 'SPEND'
-        AND ab.endDate BETWEEN :startDate AND :endDate
-    LEFT JOIN ab.category c
-    WHERE u.id IN :participantIds
-      AND (
-        c IN :categories
-        OR ab IS NULL
-      )
-    GROUP BY u.id, u.name
-    ORDER BY COALESCE(SUM(ab.amount), 0L) ASC
-""")
+                SELECT new dev.book.challenge.rank.dto.response.RankResponse(
+                    u.name,
+                    COALESCE(SUM(ab.amount), 0L)
+                )
+                FROM UserEntity u
+                LEFT JOIN AccountBook ab ON ab.user = u 
+                    AND ab.type = 'SPEND'
+                    AND ab.endDate BETWEEN :startDate AND :endDate
+                LEFT JOIN ab.category c
+                WHERE u.id IN :participantIds
+                  AND (
+                    c IN :categories
+                    OR ab IS NULL
+                  )
+                GROUP BY u.id, u.name
+                ORDER BY COALESCE(SUM(ab.amount), 0L) ASC
+            """)
     List<RankResponse> findByUserSpendingRanks(List<Long> participantIds, List<Category> categories, LocalDateTime startDate, LocalDateTime endDate);
 }
 

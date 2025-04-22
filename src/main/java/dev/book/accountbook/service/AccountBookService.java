@@ -68,6 +68,7 @@ public class AccountBookService {
         if (budgetRepository.existsById(user.getId())) {
             publisher.publishEvent(new SpendCreatedEvent(user.getId(), user.getNickname()));
         }
+
         publisher.publishEvent(new SpendCreatedRankingEvent(accountBook));
 
         return AccountBookSpendResponse.from(saved);
@@ -111,8 +112,10 @@ public class AccountBookService {
         Category category = getCategory(request.category());
         AccountBook accountBook = request.toEntity(user, category);
         AccountBook saved = accountBookRepository.save(accountBook);
+
         if (request.repeat() != null)
             individualAchievementStatusService.setCreateFirstIncomeTrue(user);
+
         return AccountBookIncomeResponse.from(saved);
     }
 
@@ -166,6 +169,7 @@ public class AccountBookService {
         accountBook.modifyDay(request.repeat().day());
         accountBook.modifyEndDate(request.endDate());
         accountBook.modifyCategory(category);
+        accountBook.modifyOccurredAt(request.occurredAt());
     }
 
     private Category getCategory(String category) {

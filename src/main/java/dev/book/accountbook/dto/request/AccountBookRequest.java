@@ -16,6 +16,7 @@ public interface AccountBookRequest {
     Repeat repeat();
     CategoryType categoryType();
     String category();
+    LocalDateTime occurredAt();
 
     default AccountBook toEntity(UserEntity user, Category category) {
         Frequency frequency = null;
@@ -28,6 +29,6 @@ public interface AccountBookRequest {
             day = repeat().day();
         }
 
-        return new AccountBook(title(), categoryType(), amount(), endDate(), memo(), user, frequency, month, day, category);
+        return new AccountBook(title(), categoryType(), amount(), endDate(), memo(), user, frequency, month, day, category, occurredAt());
     }
 }
