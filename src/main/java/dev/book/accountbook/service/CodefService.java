@@ -45,6 +45,7 @@ public class CodefService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final RsaEncryptUtil rsaEncryptUtil;
 
     public String getAccessToken() {
         try {
@@ -64,14 +65,15 @@ public class CodefService {
     }
 
     public boolean createConnectedId(UserEntity user, CreateConnectedIdRequest createRequest) {
-        System.out.println(ACCESS_TOKEN);
         HttpEntity<Map<String, Object>> request = createConnectRequest(createRequest);
         ResponseEntity<String> response = restTemplate.postForEntity(createConnectedId, request, String.class);
-        String connectedId = URLDecoder.decode(response.getBody(), StandardCharsets.UTF_8);
+        String decodeResponse = URLDecoder.decode(response.getBody(), StandardCharsets.UTF_8);
+        String connectedId;
         String code;
 
         try {
-            code = objectMapper.readTree(connectedId).path("result").path("code").asText();
+            code = objectMapper.readTree(decodeResponse).path("result").path("code").asText();
+            connectedId = objectMapper.readTree(decodeResponse).path("data").path("connectedId").asText();
         } catch (Exception e) {
             throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR);
         }
@@ -107,7 +109,7 @@ public class CodefService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(ACCESS_TOKEN);
 
-        String password = RsaEncryptUtil.encrypt(createRequest.password());
+        String password = rsaEncryptUtil.encrypt(createRequest.password());
 
         Map<String, Object> body = new HashMap<>();
         body.put("countryCode", "KR");
@@ -117,7 +119,6 @@ public class CodefService {
         body.put("loginType", "1");
         body.put("id", createRequest.id());
         body.put("password", password);
-        body.put("birthDate", "980415");
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("accountList", List.of(body));
@@ -146,9 +147,12 @@ public class CodefService {
 
     private void validationCode(String code) {
         switch (code) {
+            case "CF-00000" -> {
+                return;
+            }
             case "CF-12801", "CF-12803" -> throw new CodefErrorException(CodefErrorCode.INVALID_LOGIN_INFO);
             case "CF-12802" -> throw new CodefErrorException(CodefErrorCode.PASSWORD_ERROR_COUNT_EXCEEDED);
-            default -> throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR);
+            default -> throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR, code);
         }
     }
 }

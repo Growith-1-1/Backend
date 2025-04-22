@@ -1,6 +1,7 @@
 package dev.book.global.util;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
@@ -9,11 +10,12 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+@Component
 public class RsaEncryptUtil {
     @Value("${codef.public_key}")
-    private static String PUBLIC_KEY;
+    private String PUBLIC_KEY;
 
-    public static String encrypt(String content) {
+    public String encrypt(String content) {
         try {
             byte[] keyBytes = Base64.getDecoder().decode(PUBLIC_KEY);
 

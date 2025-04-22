@@ -22,7 +22,7 @@ public record CreateConnectedIdRequest(
         })
         Bank bank,
         @NotBlank
-        @Schema(description = "계좌번호.", example = "123456-00-789101")
+        @Schema(description = "계좌번호.", example = "12345600789101")
         String accountNumber) {
     public Codef toEntity(UserEntity user, String bankCode, String accountNumber, String connectedId) {
 
