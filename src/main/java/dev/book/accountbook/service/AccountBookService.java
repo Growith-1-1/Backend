@@ -13,8 +13,8 @@ import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.type.CategoryType;
-import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.achievement.achievement_user.IndividualAchievementStatusService;
+import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.global.entity.Category;
 import dev.book.global.repository.CategoryRepository;
 import dev.book.user.entity.UserEntity;
@@ -164,12 +164,15 @@ public class AccountBookService {
         accountBook.modifyTitle(request.title());
         accountBook.modifyAmount(request.amount());
         accountBook.modifyMemo(request.memo());
-        accountBook.modifyFrequency(request.repeat().frequency());
-        accountBook.modifyMonth(request.repeat().month());
-        accountBook.modifyDay(request.repeat().day());
         accountBook.modifyEndDate(request.endDate());
         accountBook.modifyCategory(category);
         accountBook.modifyOccurredAt(request.occurredAt());
+
+        if (request.repeat() != null) {
+            accountBook.modifyFrequency(request.repeat().frequency());
+            accountBook.modifyMonth(request.repeat().month());
+            accountBook.modifyDay(request.repeat().day());
+        }
     }
 
     private Category getCategory(String category) {
