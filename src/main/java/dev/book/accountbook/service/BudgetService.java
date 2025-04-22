@@ -83,10 +83,12 @@ public class BudgetService {
     }
 
     private long calcUsageRate(BudgetResponse response) {
+
         return (response.total() / response.budget()) * 100;
     }
 
     private Budget findBudgetIdAndUserId(Long budgetId, Long userId) {
+
         return budgetRepository.findByIdAndUserId(budgetId, userId).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
     }
 }

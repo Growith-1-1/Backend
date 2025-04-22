@@ -147,9 +147,7 @@ public class CodefService {
 
     private void validationCode(String code) {
         switch (code) {
-            case "CF-00000" -> {
-                return;
-            }
+            case "CF-00000" -> {}
             case "CF-12801", "CF-12803" -> throw new CodefErrorException(CodefErrorCode.INVALID_LOGIN_INFO);
             case "CF-12802" -> throw new CodefErrorException(CodefErrorCode.PASSWORD_ERROR_COUNT_EXCEEDED);
             default -> throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR, code);

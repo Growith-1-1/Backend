@@ -34,6 +34,7 @@ public class StatService {
     public List<AccountBookStatResponse> statList(Long userId, Frequency frequency) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
         individualAchievementStatusService.pluCheckSpendAnalysis(user);
+
         return getStatList(userId, frequency.calcStartDate());
     }
 
@@ -90,6 +91,7 @@ public class StatService {
 
     public int getTotalConsumeOfLastMonth(Long userId) {
         PeriodRange periodRange = Frequency.MONTHLY.calcPeriod();
+
         return accountBookRepository.sumSpending(userId, CategoryType.SPEND, periodRange.previousStart(), periodRange.previousEnd());
     }
 }
