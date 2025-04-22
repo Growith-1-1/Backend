@@ -1,14 +1,17 @@
 package dev.book.accountbook.type;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.RequiredArgsConstructor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@RequiredArgsConstructor
 public enum Frequency {
-    DAILY {
+    DAILY("daily") {
         @Override
         public LocalDateTime calcStartDate() {
             return LocalDate.now().atStartOfDay();
@@ -24,7 +27,7 @@ public enum Frequency {
             return new PeriodRange(todayStart, now, yesterdayStart, yesterdayEnd);
         }
     },
-    WEEKLY {
+    WEEKLY("weekly") {
         @Override
         public LocalDateTime calcStartDate() {
             return getStartOfCurrentWeek();
@@ -40,7 +43,7 @@ public enum Frequency {
             return new PeriodRange(thisWeekStart, now, lastWeekStart, lastWeekEnd);
         }
     },
-    MONTHLY {
+    MONTHLY("monthly") {
         @Override
         public LocalDateTime calcStartDate() {
             return getStartOfCurrentMonth();
@@ -56,7 +59,7 @@ public enum Frequency {
             return new PeriodRange(thisMonthStart, now, lastMonthStart, lastMonthEnd);
         }
     },
-    YEARLY {
+    YEARLY("yearly") {
         @Override
         public LocalDateTime calcStartDate() {
             return getStartOfCurrentYear();
@@ -106,6 +109,12 @@ public enum Frequency {
         return LocalDate.now()
                 .withDayOfYear(1)
                 .atStartOfDay();
+    }
+    private final String lower;
+
+    @JsonValue
+    public String getLower() {
+        return lower;
     }
 
     @JsonCreator
