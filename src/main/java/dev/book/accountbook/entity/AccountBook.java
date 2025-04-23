@@ -53,6 +53,7 @@ public class AccountBook extends BaseTimeEntity {
         this.month = month;
         this.day = day;
         this.category = category;
+        this.occurredAt = occurredAt;
     }
 
     public void modifyTitle(String title) {
