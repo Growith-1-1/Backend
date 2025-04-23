@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +32,7 @@ public class AccountBook extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
-
+    private LocalDate occurredAt;
     @Enumerated(EnumType.STRING)
     private Frequency frequency;
     private Integer month;
@@ -41,7 +42,7 @@ public class AccountBook extends BaseTimeEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public AccountBook(String title, CategoryType type, int amount, LocalDateTime endDate, String memo, UserEntity user, Frequency frequency, Integer month, Integer day, Category category) {
+    public AccountBook(String title, CategoryType type, int amount, LocalDateTime endDate, String memo, UserEntity user, Frequency frequency, Integer month, Integer day, Category category, LocalDate occurredAt) {
         this.title = title;
         this.type = type;
         this.amount = amount;
@@ -84,5 +85,9 @@ public class AccountBook extends BaseTimeEntity {
 
     public void modifyCategory(Category category) {
         this.category = category;
+    }
+
+    public void modifyOccurredAt(LocalDate occurredAt) {
+        this.occurredAt = occurredAt;
     }
 }
