@@ -17,10 +17,10 @@ public class BudgetController implements BudgetApi {
     private final BudgetService budgetService;
 
     @Override
-    @GetMapping
-    public ResponseEntity<BudgetResponse> getBudgetList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    @GetMapping("/{id}")
+    public ResponseEntity<BudgetResponse> getBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
         Long userId = userDetails.user().getId();
-        BudgetResponse response = budgetService.getBudget(userId);
+        BudgetResponse response = budgetService.getBudget(id, userId);
 
         return ResponseEntity.ok(response);
     }

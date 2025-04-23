@@ -1,6 +1,7 @@
 package dev.book.accountbook.repository;
 
 import dev.book.accountbook.entity.Budget;
+import dev.book.accountbook.repository.querydsl.BudgetRepositoryCustom;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> , BudgetRepositoryCustom {
     Optional<Budget> findByIdAndUserId(Long id, Long userId);
+    boolean existsByUserId(Long userId);
 
     @EntityGraph(attributePaths = {"user"})
     @Query("""

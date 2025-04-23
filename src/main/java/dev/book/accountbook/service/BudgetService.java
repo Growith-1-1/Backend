@@ -35,13 +35,15 @@ public class BudgetService {
     private final FCMService fcmService;
     private final IndividualAchievementStatusService individualAchievementStatusService;
 
-    public BudgetResponse getBudget(Long userId) {
+    public BudgetResponse getBudget(Long id, Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        return budgetRepository.findBudgetWithTotal(user.getId());
+        return budgetRepository.findBudgetWithTotal(id);
     }
 
     public BudgetResponse createBudget(UserEntity user, BudgetRequest budgetRequest) {
+        isExistBudget(user.getId());
+
         int date = LocalDate.now().getMonthValue();
         budgetRepository.save(new Budget(budgetRequest.budget(), date, user));
         individualAchievementStatusService.plusCreateBudget(user);
@@ -62,7 +64,7 @@ public class BudgetService {
             fcmService.sendSpendNotification(token.getToken(), event.nickname(), response.budget(), response.total(), usageRate);
             //과소비 경고 업적
             UserEntity user = userRepository.findById(event.userId())
-                            .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+                    .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
             individualAchievementStatusService.plusGetWarningBudget(user);
         }
     }
@@ -84,6 +86,12 @@ public class BudgetService {
 
     private long calcUsageRate(BudgetResponse response) {
         return (response.total() / response.budget()) * 100;
+    }
+
+    private void isExistBudget(Long userId) {
+        if (budgetRepository.existsByUserId(userId)) {
+            throw new AccountBookErrorException(AccountBookErrorCode.DUPLICATE_BUDGET);
+        }
     }
 
     private Budget findBudgetIdAndUserId(Long budgetId, Long userId) {

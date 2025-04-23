@@ -37,7 +37,7 @@ public interface BudgetApi {
                     )
             )
     )
-    ResponseEntity<BudgetResponse> getBudgetList(@AuthenticationPrincipal CustomUserDetails userDetails);
+    ResponseEntity<BudgetResponse> getBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
     @Operation(
             summary = "예산 등록",
