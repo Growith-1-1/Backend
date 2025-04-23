@@ -5,7 +5,6 @@ import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.challenge.rank.dto.response.RankResponse;
 import dev.book.global.entity.Category;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -22,14 +22,44 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
     Optional<AccountBook> findByIdAndUserId(Long id, Long userId);
 
     @EntityGraph(attributePaths = {"category"})
-    List<AccountBook> findAllByUserIdAndTypeAndCategoryIsNotNullOrderByUpdatedAtDesc(Long userId, CategoryType type);
+    @Query("""
+            SELECT a
+            FROM AccountBook a
+                JOIN a.category c
+                WHERE a.user.id = :userId
+                    AND a.type = :categoryType
+                    AND a.occurredAt BETWEEN :startDate AND :endDate
+                ORDER BY a.occurredAt DESC
+            """)
+    List<AccountBook> findAllTypeAndPeriod(
+            @Param("userId") Long userId,
+            @Param("categoryType") CategoryType categoryType,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @EntityGraph(attributePaths = {"category"})
+    @Query("""
+            SELECT a
+            FROM AccountBook a
+                JOIN a.category c
+                WHERE a.user.id = :userId
+                    AND a.occurredAt BETWEEN :startDate AND :endDate
+                ORDER BY a.occurredAt DESC
+            """)
+    List<AccountBook> findAllPeriod(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 
     @Query("""
                 SELECT new dev.book.accountbook.dto.response.AccountBookStatResponse(c.korean, SUM(ab.amount))
                 FROM AccountBook ab
                     JOIN ab.category c
                     WHERE ab.user.id = :userId
-                      AND ab.updatedAt BETWEEN :startDate AND :endDate
+                      AND ab.type = :categoryType
+                      AND ab.occurredAt BETWEEN :startDate AND :endDate
                     GROUP BY c.korean
                     ORDER BY SUM(ab.amount) DESC
             """)
@@ -37,6 +67,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             @Param("userId") Long userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
+            @Param("categoryType") CategoryType categoryType,
             Pageable pageable
     );
 
@@ -79,12 +110,12 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 FROM AccountBook ab
                 JOIN ab.category c
                 WHERE ab.user.id = :userId
-                  AND c.korean = :categoryName
-                ORDER BY ab.updatedAt DESC, ab.id DESC
+                  AND c.id = :categoryId
+                ORDER BY ab.occurredAt DESC, ab.id DESC
             """)
-    Page<AccountBook> findByUserIdAndCategoryNameWithGraph(
+    List<AccountBook> findByUserIdAndCategoryNameWithGraph(
             @Param("userId") Long userId,
-            @Param("categoryName") String categoryName,
+            @Param("categoryId") Long categoryId,
             Pageable pageable
     );
 
@@ -108,5 +139,15 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
     ORDER BY COALESCE(SUM(ab.amount), 0L) ASC
 """)
     List<RankResponse> findByUserSpendingRanks(List<Long> participantIds, List<Category> categories, LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("""
+                SELECT a
+                FROM AccountBook a
+                JOIN FETCH a.category
+                WHERE a.user.id = :userId 
+                            AND a.occurredAt BETWEEN :start AND :end
+                ORDER BY a.occurredAt DESC
+            """)
+    List<AccountBook> findAllMonth(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 }
 

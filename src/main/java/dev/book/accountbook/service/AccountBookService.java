@@ -1,11 +1,10 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.event.SpendCreatedEvent;
-import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
-import dev.book.accountbook.dto.request.AccountBookRequest;
-import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
-import dev.book.accountbook.dto.request.AccountBookSpendRequest;
+import dev.book.accountbook.dto.request.*;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
+import dev.book.accountbook.dto.response.AccountBookMonthResponse;
+import dev.book.accountbook.dto.response.AccountBookPeriodResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorCode;
@@ -13,8 +12,8 @@ import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.type.CategoryType;
-import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.achievement.achievement_user.IndividualAchievementStatusService;
+import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.global.entity.Category;
 import dev.book.global.repository.CategoryRepository;
 import dev.book.user.entity.UserEntity;
@@ -23,13 +22,13 @@ import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,15 +43,15 @@ public class AccountBookService {
 
     @Transactional
     public AccountBookSpendResponse getSpendOne(Long id, Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        isExistsUser(userId);
         AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_SPEND);
 
         return AccountBookSpendResponse.from(accountBook);
     }
 
     @Transactional
-    public List<AccountBookSpendResponse> getSpendList(Long userId) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndTypeAndCategoryIsNotNullOrderByUpdatedAtDesc(userId, CategoryType.SPEND);
+    public List<AccountBookSpendResponse> getSpendList(Long userId, AccountBookListRequest request) {
+        List<AccountBook> accountBooks = accountBookRepository.findAllTypeAndPeriod(userId, CategoryType.SPEND, request.startDate(), request.endDate());
 
         return accountBooks.stream()
                 .map(AccountBookSpendResponse::from)
@@ -65,7 +64,7 @@ public class AccountBookService {
         AccountBook accountBook = request.toEntity(user, category);
         AccountBook saved = accountBookRepository.save(accountBook);
 
-        if (budgetRepository.existsById(user.getId())) {
+        if (budgetRepository.existsByUserId(user.getId())) {
             publisher.publishEvent(new SpendCreatedEvent(user.getId(), user.getNickname()));
         }
         publisher.publishEvent(new SpendCreatedRankingEvent(accountBook));
@@ -98,8 +97,8 @@ public class AccountBookService {
     }
 
     @Transactional
-    public List<AccountBookIncomeResponse> getIncomeList(Long userId) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByUserIdAndTypeAndCategoryIsNotNullOrderByUpdatedAtDesc(userId, CategoryType.INCOME);
+    public List<AccountBookIncomeResponse> getIncomeList(Long userId, AccountBookListRequest request) {
+        List<AccountBook> accountBooks = accountBookRepository.findAllTypeAndPeriod(userId, CategoryType.INCOME, request.startDate(), request.endDate());
 
         return accountBooks.stream()
                 .map(AccountBookIncomeResponse::from)
@@ -133,8 +132,10 @@ public class AccountBookService {
         return true;
     }
 
+    @Transactional
     public List<AccountBookSpendResponse> getCategorySpendList(String category, Long userId) {
-        Page<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryNameWithGraph(userId, category, PageRequest.of(0, 10));
+        Category findCategory = getCategory(category);
+        List<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryNameWithGraph(userId, findCategory.getId(), PageRequest.of(0, 10));
 
         return categorySpendList.stream()
                 .map(AccountBookSpendResponse::from)
@@ -150,6 +151,32 @@ public class AccountBookService {
                 .toList();
     }
 
+    public List<AccountBookPeriodResponse> getAccountBookPeriod(Long userId, AccountBookListRequest request) {
+        isExistsUser(userId);
+        List<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, request.startDate(), request.endDate());
+
+        return accountBookList.stream()
+                .map(AccountBookPeriodResponse::from)
+                .toList();
+    }
+
+    public List<AccountBookMonthResponse> getMonthAccountBook(Long userId, AccountBookMonthRequest request) {
+        isExistsUser(userId);
+
+        LocalDate startDate = request.requestMonth();
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        List<AccountBook> findList = accountBookRepository.findAllMonth(userId, startDate, endDate);
+
+        return accountBookList(findList, startDate, endDate);
+    }
+
+    private void isExistsUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
+        }
+    }
+
     private AccountBook findAccountBookOrThrow(Long id, Long userId, AccountBookErrorCode errorCode) {
         return accountBookRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new AccountBookErrorException(errorCode));
@@ -161,11 +188,15 @@ public class AccountBookService {
         accountBook.modifyTitle(request.title());
         accountBook.modifyAmount(request.amount());
         accountBook.modifyMemo(request.memo());
-        accountBook.modifyFrequency(request.repeat().frequency());
-        accountBook.modifyMonth(request.repeat().month());
-        accountBook.modifyDay(request.repeat().day());
         accountBook.modifyEndDate(request.endDate());
         accountBook.modifyCategory(category);
+        accountBook.modifyOccurredAt(request.occurredAt());
+
+        if (request.repeat() != null) {
+            accountBook.modifyFrequency(request.repeat().frequency());
+            accountBook.modifyMonth(request.repeat().month());
+            accountBook.modifyDay(request.repeat().day());
+        }
     }
 
     private Category getCategory(String category) {
@@ -181,6 +212,48 @@ public class AccountBookService {
                     Category category = getCategory(request.category());
 
                     return request.toEntity(user, category);
-                }).toList();
+                })
+                .toList();
+    }
+
+    private List<AccountBookMonthResponse> accountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
+        List<AccountBookMonthResponse> responseList = new ArrayList<>();
+        Map<LocalDate, List<AccountBook>> accountBookMap = groupAccountBooksByDate(findList);
+
+        for (int i = startDate.getDayOfMonth(); i <= endDate.getDayOfMonth(); i++) {
+            LocalDate currentDate = LocalDate.of(startDate.getYear(), startDate.getMonthValue(), i);
+            List<AccountBook> dayBook = accountBookMap.getOrDefault(currentDate, Collections.emptyList());
+
+            AccountBookMonthResponse response = createDailyResponse(dayBook, i);
+            responseList.add(response);
+        }
+
+        return responseList;
+    }
+
+    private Map<LocalDate, List<AccountBook>> groupAccountBooksByDate(List<AccountBook> findList) {
+        return findList.stream()
+                .collect(Collectors.groupingBy(AccountBook::getOccurredAt));
+    }
+
+    private AccountBookMonthResponse createDailyResponse(List<AccountBook> dayBook, int dayOfMonth) {
+        int spendTotal = calculateTotalByType(dayBook, CategoryType.SPEND);
+        int incomeTotal = calculateTotalByType(dayBook, CategoryType.INCOME);
+        List<AccountBookPeriodResponse> periodResponseList = createPeriodResponses(dayBook);
+
+        return new AccountBookMonthResponse(dayOfMonth, spendTotal, incomeTotal, periodResponseList);
+    }
+
+    private int calculateTotalByType(List<AccountBook> books, CategoryType type) {
+        return books.stream()
+                .filter(book -> book.getType() == type)
+                .mapToInt(AccountBook::getAmount)
+                .sum();
+    }
+
+    private List<AccountBookPeriodResponse> createPeriodResponses(List<AccountBook> books) {
+        return books.stream()
+                .map(AccountBookPeriodResponse::from)
+                .toList();
     }
 }

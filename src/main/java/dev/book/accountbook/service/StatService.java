@@ -53,7 +53,7 @@ public class StatService {
 
     private List<AccountBookStatResponse> getStatList(Long userId, LocalDateTime startDate) {
 
-        return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDateTime.now(), PageRequest.of(0, 3));
+        return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDateTime.now(), CategoryType.SPEND, PageRequest.of(0, 3));
     }
 
     private List<AccountBookSpendResponse> getCategoryList(Long userId, String category, LocalDateTime starDate) {

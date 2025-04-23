@@ -1,10 +1,10 @@
 package dev.book.accountbook.controller;
 
 import dev.book.accountbook.controller.swagger.AccountBookApi;
-import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
-import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
-import dev.book.accountbook.dto.request.AccountBookSpendRequest;
+import dev.book.accountbook.dto.request.*;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
+import dev.book.accountbook.dto.response.AccountBookMonthResponse;
+import dev.book.accountbook.dto.response.AccountBookPeriodResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.service.AccountBookService;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -25,15 +25,15 @@ public class AccountBookController implements AccountBookApi {
 
     @Override
     @GetMapping("/spend")
-    public ResponseEntity<List<AccountBookSpendResponse>> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<AccountBookSpendResponse>> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request) {
         Long userId = userDetails.user().getId();
-        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(userId);
+        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(userId, request);
 
         return ResponseEntity.ok(responses);
     }
 
     @Override
-    @GetMapping("/spend/{id}")
+    @GetMapping("/spend/detail/{id}")
     public ResponseEntity<AccountBookSpendResponse> getSpendOne(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
         Long userId = userDetails.user().getId();
         AccountBookSpendResponse response = accountBookService.getSpendOne(id,userId);
@@ -70,15 +70,15 @@ public class AccountBookController implements AccountBookApi {
 
     @Override
     @GetMapping("/income")
-    public ResponseEntity<List<AccountBookIncomeResponse>> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<AccountBookIncomeResponse>> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request) {
         Long userId = userDetails.user().getId();
-        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(userId);
+        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(userId, request);
 
         return ResponseEntity.ok(responses);
     }
 
     @Override
-    @GetMapping("/income/{id}")
+    @GetMapping("/income/detail/{id}")
     public ResponseEntity<AccountBookIncomeResponse> getIncomeOne(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
         Long userId = userDetails.user().getId();
         AccountBookIncomeResponse response = accountBookService.getIncomeOne(id, userId);
@@ -114,7 +114,7 @@ public class AccountBookController implements AccountBookApi {
     }
 
     @Override
-    @GetMapping("/{category}")
+    @GetMapping("/spend/{category}")
     public ResponseEntity<List<AccountBookSpendResponse>> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String category) {
         Long userId = userDetails.user().getId();
         List<AccountBookSpendResponse> responses = accountBookService.getCategorySpendList(category, userId);
@@ -124,9 +124,27 @@ public class AccountBookController implements AccountBookApi {
 
     @Override
     @PostMapping("/spend-list")
-    public ResponseEntity<List<AccountBookSpendResponse>> createSpendList(CustomUserDetails userDetails, AccountBookSpendListRequest requestList) {
+    public ResponseEntity<List<AccountBookSpendResponse>> createSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookSpendListRequest requestList) {
         List<AccountBookSpendResponse> spendList = accountBookService.createSpendList(userDetails.user(), requestList);
 
         return ResponseEntity.ok(spendList);
+    }
+
+    @Override
+    @PostMapping("/all")
+    public ResponseEntity<List<AccountBookPeriodResponse>> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request) {
+        Long userId = userDetails.user().getId();
+        List<AccountBookPeriodResponse> responseList = accountBookService.getAccountBookPeriod(userId, request);
+
+        return ResponseEntity.ok(responseList);
+    }
+
+    @Override
+    @PostMapping("/month")
+    public ResponseEntity<List<AccountBookMonthResponse>> getMonthAccountBook(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookMonthRequest request) {
+        Long userId = userDetails.user().getId();
+        List<AccountBookMonthResponse> responseList = accountBookService.getMonthAccountBook(userId, request);
+
+        return ResponseEntity.ok(responseList);
     }
 }
