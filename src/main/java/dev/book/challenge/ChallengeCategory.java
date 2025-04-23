@@ -4,7 +4,6 @@ import dev.book.challenge.entity.Challenge;
 import dev.book.global.entity.Category;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,6 +24,7 @@ public class ChallengeCategory {
     public ChallengeCategory(Challenge challenge, Category category) {
         this.challenge = challenge;
         this.category = category;
+        challenge.getChallengeCategories().add(this);
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

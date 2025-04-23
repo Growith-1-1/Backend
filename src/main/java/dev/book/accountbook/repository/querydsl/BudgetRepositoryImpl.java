@@ -25,7 +25,7 @@ public class BudgetRepositoryImpl implements BudgetRepositoryCustom {
                 .from(budget)
                 .leftJoin(accountBook)
                 .on(accountBook.user.id.eq(budget.user.id)
-                        .and(Expressions.numberTemplate(Integer.class, "month({0})", accountBook.updatedAt)
+                        .and(Expressions.numberTemplate(Integer.class, "month({0})", accountBook.occurredAt)
                                 .eq(budget.month))
                 )
                 .where(budget.user.id.eq(userId))

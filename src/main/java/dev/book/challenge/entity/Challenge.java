@@ -8,6 +8,7 @@ import dev.book.challenge.type.Release;
 import dev.book.challenge.type.Status;
 import dev.book.challenge.user_challenge.entity.UserChallenge;
 import dev.book.global.entity.BaseTimeEntity;
+import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -72,7 +73,6 @@ public class Challenge extends BaseTimeEntity {
     }
 
 
-
     public static Challenge of(ChallengeCreateRequest challengeCreateRequest, UserEntity creator) {
         Challenge challenge = new Challenge(challengeCreateRequest.title(), challengeCreateRequest.text(),
                 challengeCreateRequest.release(),
@@ -81,8 +81,9 @@ public class Challenge extends BaseTimeEntity {
         return challenge;
 
     }
-//리스트는 업데이트되면 안에 내용을 지우고 다시 만들어야함
-    public void updateInfo(ChallengeUpdateRequest request, List<ChallengeCategory> categories) {
+
+    //리스트는 업데이트되면 안에 내용을 지우고 다시 만들어야함
+    public void updateInfo(ChallengeUpdateRequest request, List<Category> categories) {
         this.title = request.title();
         this.text = request.text();
         this.release = Release.valueOf(request.release());
@@ -91,7 +92,10 @@ public class Challenge extends BaseTimeEntity {
         this.status = Status.RECRUITING;
         this.startDate = request.startDate();
         this.endDate = request.endDate();
-        this.challengeCategories = categories;
+        this.challengeCategories.clear(); // orphanRemoval 작동
+        categories.forEach(category -> {
+            this.challengeCategories.add(new ChallengeCategory(this, category));
+        });
     }
 
     public void isOver(long countParticipants) {
@@ -118,7 +122,7 @@ public class Challenge extends BaseTimeEntity {
         }
     }
 
-    public void completeChallenge(){
+    public void completeChallenge() {
         if (Status.IN_PROGRESS.equals(this.status))
             this.status = Status.COMPLETED;
     }

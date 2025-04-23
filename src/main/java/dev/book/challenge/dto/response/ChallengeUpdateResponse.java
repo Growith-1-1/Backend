@@ -11,16 +11,23 @@ import java.util.List;
 
 public record ChallengeUpdateResponse(Long id, String title, String text, Release release,
                                       Integer amount,
-                                      Integer capacity, List<Category> categories, Status status,
+                                      Integer capacity, List<CategoryDto> categories, Status status,
                                       LocalDate startDate, LocalDate endDate,
                                       LocalDateTime createDate,
                                       LocalDateTime modifyDate) {
 
-    public static ChallengeUpdateResponse fromEntity(Challenge challenge,List<Category> categories) {
+    public static ChallengeUpdateResponse fromEntity(Challenge challenge, List<Category> categories) {
         return new ChallengeUpdateResponse(challenge.getId(), challenge.getTitle(),
                 challenge.getText(), challenge.getRelease(), challenge.getAmount(),
-                challenge.getCapacity(), categories, challenge.getStatus(),
+                challenge.getCapacity(),
+                challenge.getChallengeCategories().stream().map(challengeCategory -> new CategoryDto(challengeCategory.getCategory().getKorean())).toList(),
+
+
+                challenge.getStatus(),
                 challenge.getStartDate(), challenge.getEndDate(), challenge.getCreatedAt(),
                 challenge.getUpdatedAt());
+    }
+
+    public record CategoryDto(String name) {
     }
 }
