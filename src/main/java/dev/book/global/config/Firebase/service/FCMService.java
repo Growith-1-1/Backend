@@ -68,4 +68,10 @@ public class FCMService {
                         .build())
                 .build();
     }
+
+    public String getToken(Long userId) {
+        FcmToken fcmToken = fcmTokenRepository.findById(userId).orElseThrow();
+
+        return fcmToken.getToken();
+    }
 }

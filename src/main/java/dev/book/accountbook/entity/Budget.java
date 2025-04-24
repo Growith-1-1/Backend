@@ -24,6 +24,7 @@ public class Budget extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+    private int limitCount;
 
     @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BudgetAccountBook> budgetAccountBookList = new ArrayList<>();
@@ -39,5 +40,9 @@ public class Budget extends BaseTimeEntity {
 
         this.budgetLimit = budgetLimit;
         this.month = date;
+    }
+
+    public void modifyLimitCount(int limitCount) {
+        this.limitCount = limitCount;
     }
 }

@@ -3,10 +3,12 @@ package dev.book.accountbook.service;
 import dev.book.accountbook.dto.request.*;
 import dev.book.accountbook.dto.response.*;
 import dev.book.accountbook.entity.AccountBook;
+import dev.book.accountbook.entity.Budget;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorCode;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
+import dev.book.accountbook.type.BudgetLimit;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.achievement.achievement_user.dto.event.CreateFirstIncomeEvent;
 import dev.book.achievement.achievement_user.dto.event.GetWarningBudgetEvent;
@@ -36,12 +38,11 @@ public class AccountBookService {
     private final ApplicationEventPublisher publisher;
     private final CategoryRepository categoryRepository;
     private final AccountBookRepository accountBookRepository;
-    private final Double LIMIT_WARNING = 0.5;
 
     @Transactional
     public AccountBookSpendResponse getSpendOne(Long id, Long userId) {
         isExistsUser(userId);
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_SPEND);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
 
         return AccountBookSpendResponse.from(accountBook);
     }
@@ -61,31 +62,16 @@ public class AccountBookService {
         AccountBook accountBook = request.toEntity(user, category);
         AccountBook saved = accountBookRepository.save(accountBook);
 
-        if (budgetRepository.existsByUserId(user.getId())) {
-            BudgetResponse response = budgetRepository.findBudgetWithTotal(user.getId());
-
-            if (response.total() >= response.budget() * LIMIT_WARNING) {
-                long usageRate = calcUsageRate(response);
-                //업적
-                publisher.publishEvent(new GetWarningBudgetEvent(user));
-                //fcm 알림
-                publisher.publishEvent(new LimitWarningFcmEvent(user.getId(), user.getNickname(), response.budget(), response.total(), usageRate));
-            }
-        }
+        handleBudgetLimitAlert(user);
 
         publisher.publishEvent(new SpendCreatedRankingEvent(accountBook));
 
         return AccountBookSpendResponse.from(saved);
     }
 
-    private long calcUsageRate(BudgetResponse response) {
-        return (response.total() / response.budget()) * 100;
-    }
-
-
     @Transactional
     public AccountBookSpendResponse modifySpend(AccountBookSpendRequest request, Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_SPEND);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
         updateAccountBook(accountBook, request);
         accountBookRepository.flush();
 
@@ -94,7 +80,7 @@ public class AccountBookService {
 
     @Transactional
     public boolean deleteSpend(Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_SPEND);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
         accountBookRepository.delete(accountBook);
 
         return true;
@@ -102,7 +88,7 @@ public class AccountBookService {
 
     @Transactional
     public AccountBookIncomeResponse getIncomeOne(Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_INCOME);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
 
         return AccountBookIncomeResponse.from(accountBook);
     }
@@ -124,12 +110,13 @@ public class AccountBookService {
 
         if (request.repeat() != null)
             publisher.publishEvent(new CreateFirstIncomeEvent(user));
+
         return AccountBookIncomeResponse.from(saved);
     }
 
     @Transactional
     public AccountBookIncomeResponse modifyIncome(Long id, AccountBookIncomeRequest request, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_INCOME);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
         updateAccountBook(accountBook, request);
         accountBookRepository.flush();
 
@@ -138,7 +125,7 @@ public class AccountBookService {
 
     @Transactional
     public boolean deleteIncome(Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, userId, AccountBookErrorCode.NOT_FOUND_INCOME);
+        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
         accountBookRepository.delete(accountBook);
 
         return true;
@@ -184,13 +171,15 @@ public class AccountBookService {
     }
 
     private void isExistsUser(Long userId) {
+
         if (!userRepository.existsById(userId)) {
             throw new UserErrorException(UserErrorCode.USER_NOT_FOUND);
         }
     }
 
-    private AccountBook findAccountBookOrThrow(Long id, Long userId, AccountBookErrorCode errorCode) {
-        return accountBookRepository.findByIdAndUserId(id, userId)
+    private AccountBook findAccountBookOrThrow(Long id, AccountBookErrorCode errorCode) {
+
+        return accountBookRepository.findById(id)
                 .orElseThrow(() -> new AccountBookErrorException(errorCode));
     }
 
@@ -219,6 +208,7 @@ public class AccountBookService {
     }
 
     private List<AccountBook> accountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
+
         return requestList.accountBookSpendRequestList().stream()
                 .map(request -> {
                     Category category = getCategory(request.category());
@@ -257,6 +247,7 @@ public class AccountBookService {
     }
 
     private int calculateTotalByType(List<AccountBook> books, CategoryType type) {
+
         return books.stream()
                 .filter(book -> book.getType() == type)
                 .mapToInt(AccountBook::getAmount)
@@ -264,8 +255,52 @@ public class AccountBookService {
     }
 
     private List<AccountBookPeriodResponse> createPeriodResponses(List<AccountBook> books) {
+
         return books.stream()
                 .map(AccountBookPeriodResponse::from)
                 .toList();
+    }
+
+    private void handleBudgetLimitAlert(UserEntity user) {
+        budgetRepository.findByUserId(user.getId())
+                .ifPresent(findBudget -> {
+                    BudgetResponse response = budgetRepository.findBudgetByUserIdWithTotal(user.getId());
+                    double ratio = (double) response.total() / response.budget();
+                    BudgetLimit currentLimit = BudgetLimit.limitBudget(ratio);
+
+                    if (currentLimit != null && currentLimit.getLimitCount() > findBudget.getLimitCount()) {
+                        long usageRate = calcUsageRate(response);
+
+                        // 업적
+                        publisher.publishEvent(new GetWarningBudgetEvent(user));
+                        // fcm 알림
+                        publisher.publishEvent(new LimitWarningFcmEvent(user.getId(), user.getNickname(),
+                                response.budget(), response.total(), usageRate));
+
+                        findBudget.modifyLimitCount(currentLimit.getLimitCount());
+                    }
+                });
+    }
+
+
+    private long calcUsageRate(BudgetResponse response) {
+        return (response.total() / response.budget()) * 100;
+    }
+
+    public String sendMessage(UserEntity user) {
+        Budget budget = budgetRepository.findByUserId(user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
+        BudgetResponse response = budgetRepository.findBudgetByUserIdWithTotal(user.getId());
+
+        double ratio = (double) response.total() / response.budget();
+        BudgetLimit currentLimit = BudgetLimit.limitBudget(ratio);
+
+        if (currentLimit != null && currentLimit.getLimitCount() > budget.getLimitCount()) {
+            long usageRate = calcUsageRate(response);
+
+            return user.getName() + "님, 현재까지 지출은 " + response.total() + "원입니다." +
+                    "정하신 예산" + response.budget() + "원 에서" + usageRate + "% 만큼 사용하셨습니다.";
+        }
+
+        return "발송된 메시지가 없습니다.";
     }
 }
