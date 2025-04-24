@@ -51,7 +51,7 @@ public class AccountBookService {
 
     @Transactional
     public List<AccountBookSpendResponse> getSpendList(Long userId, AccountBookListRequest request) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllTypeAndPeriod(userId, CategoryType.SPEND, request.startDate(), request.endDate());
+        List<AccountBook> accountBooks = accountBookRepository.findAllByTypeAndPeriod(userId, CategoryType.SPEND, request.startDate(), request.endDate());
 
         return accountBooks.stream()
                 .map(AccountBookSpendResponse::from)
@@ -99,7 +99,7 @@ public class AccountBookService {
 
     @Transactional
     public List<AccountBookIncomeResponse> getIncomeList(Long userId, AccountBookListRequest request) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllTypeAndPeriod(userId, CategoryType.INCOME, request.startDate(), request.endDate());
+        List<AccountBook> accountBooks = accountBookRepository.findAllByTypeAndPeriod(userId, CategoryType.INCOME, request.startDate(), request.endDate());
 
         return accountBooks.stream()
                 .map(AccountBookIncomeResponse::from)

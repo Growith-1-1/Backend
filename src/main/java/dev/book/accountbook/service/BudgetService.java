@@ -42,7 +42,7 @@ public class BudgetService {
     }
 
     public BudgetResponse createBudget(UserEntity user, BudgetRequest budgetRequest) {
-        isExistBudget(user.getId());
+        validAlreadyExistBudget(user.getId());
 
         int date = LocalDate.now().getMonthValue();
         budgetRepository.save(new Budget(budgetRequest.budget(), date, user));
@@ -89,7 +89,7 @@ public class BudgetService {
         return (response.total() / response.budget()) * 100;
     }
 
-    private void isExistBudget(Long userId) {
+    private void validAlreadyExistBudget(Long userId) {
         if (budgetRepository.existsByUserId(userId)) {
             throw new AccountBookErrorException(AccountBookErrorCode.DUPLICATE_BUDGET);
         }

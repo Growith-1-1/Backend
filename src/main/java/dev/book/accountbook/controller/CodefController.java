@@ -33,7 +33,6 @@ public class CodefController implements CodefApi {
     }
 
     @Override
-    @Profile("local")
     @GetMapping("/trans")
     public ResponseEntity<String> trans(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String decodeList = codefService.getTransactions(userDetails.user());

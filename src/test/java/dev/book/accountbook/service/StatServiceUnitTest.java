@@ -104,6 +104,6 @@ class StatServiceUnitTest {
         AccountBookConsumeResponse result = statService.consume(user.getId(), frequency);
 
         // then
-        assertThat(5000).isEqualTo(result.consume());
+        assertThat(result.consume()).isEqualTo(5000);
     }
 }

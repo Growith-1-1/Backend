@@ -109,7 +109,7 @@ class AccountBookServiceUnitTest {
         AccountBook accountBook = request.toEntity(userEntity, category);
 
         List<AccountBook> mockList = List.of(accountBook, accountBook);
-        given(accountBookRepository.findAllTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
+        given(accountBookRepository.findAllByTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
 
         // when
         List<AccountBookSpendResponse> result = accountBookService.getSpendList(userId, new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)));
@@ -265,7 +265,7 @@ class AccountBookServiceUnitTest {
         Category category = new Category("food", "식비");
         AccountBook accountBook = request.toEntity(userEntity, category);
         List<AccountBook> mockList = List.of(accountBook, accountBook);
-        given(accountBookRepository.findAllTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
+        given(accountBookRepository.findAllByTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
 
         // when
         List<AccountBookIncomeResponse> result = accountBookService.getIncomeList(userId, new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)));
