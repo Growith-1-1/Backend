@@ -1,6 +1,7 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
+import dev.book.accountbook.dto.request.AccountBookListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.request.Repeat;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
@@ -8,13 +9,14 @@ import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
-import dev.book.accountbook.type.Category;
+import dev.book.accountbook.type.CategoryType;
 import dev.book.accountbook.type.Frequency;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import dev.book.global.config.security.jwt.JwtAuthenticationToken;
+import dev.book.global.entity.Category;
+import dev.book.global.repository.CategoryRepository;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.repository.UserRepository;
-import dev.book.util.UserBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -52,6 +55,9 @@ public class AccountBookServiceIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
     private AccountBookRepository accountBookRepository;
 
     @BeforeEach
@@ -61,12 +67,40 @@ public class AccountBookServiceIntegrationTest {
     }
 
     static CustomUserDetails userDetails;
+    static LocalDateTime endTime = LocalDateTime.of(2025, 5, 31, 0, 0);
+    static LocalDate occurredAt = LocalDate.of(2025, 4, 22);
+    static List<AccountBook> savedBooks = null;
 
     @BeforeEach
     public void createUser() {
-        UserEntity user = UserBuilder.of();
+        UserEntity user = UserEntity.builder()
+                .email("test@example.com")
+                .name("홍길동")
+                .nickname("길동이")
+                .profileImageUrl("test")
+                .build();
+        userRepository.save(user);
+
         userDetails = new CustomUserDetails(user);
         SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(userDetails, userDetails.getAuthorities()));
+
+        List<Category> categories = categoryRepository.findAll();
+
+        List<AccountBook> books = List.of(
+                new AccountBook("점심 식비", CategoryType.SPEND, 8000, null, "김밥천국", user, null, null, null, categories.get(0), LocalDate.of(2025, 4, 21)),
+                new AccountBook("카페", CategoryType.SPEND, 4500, null, "이디야 아메리카노", user, null, null, null, categories.get(1), LocalDate.of(2025, 4, 22)),
+                new AccountBook("마트 장보기", CategoryType.SPEND, 23000, null, "라면, 참치", user, null, null, null, categories.get(2), LocalDate.of(2025, 4, 23)),
+                new AccountBook("술자리", CategoryType.SPEND, 50000, null, "친구들과 회식", user, null, null, null, categories.get(3), LocalDate.of(2025, 4, 23)),
+                new AccountBook("옷 쇼핑", CategoryType.SPEND, 67000, null, "봄 자켓", user, null, null, null, categories.get(4), LocalDate.of(2025, 4, 24)),
+                new AccountBook("헬스장 등록", CategoryType.SPEND, 60000, null, "한 달 등록", user, null, null, null, categories.get(6), LocalDate.of(2025, 4, 24)),
+                new AccountBook("미용실", CategoryType.SPEND, 15000, null, "컷트", user, null, null, null, categories.get(9), LocalDate.of(2025, 4, 25)),
+                new AccountBook("버스비", CategoryType.SPEND, 1400, null, "출근길", user, null, null, null, categories.get(10), LocalDate.of(2025, 4, 21)),
+                new AccountBook("이체", CategoryType.INCOME, 300000, null, "돈 빌려준거 받음", user, null, null, 25, categories.get(17), LocalDate.of(2025, 4, 26)),
+                new AccountBook("급여", CategoryType.INCOME, 3000000, null, "4월 급여", user, Frequency.MONTHLY, null, 25, categories.get(18), LocalDate.of(2025, 4, 25)),
+                new AccountBook("저축", CategoryType.INCOME, 500000, null, "월 저축", user, Frequency.MONTHLY, null, 25, categories.get(19), LocalDate.of(2025, 4, 25))
+        );
+
+        savedBooks = accountBookRepository.saveAll(books);
     }
 
     @AfterEach
@@ -81,24 +115,21 @@ public class AccountBookServiceIntegrationTest {
     void getSpendOne() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
         AccountBookSpendRequest request = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-
-        AccountBook accountBook = accountBookRepository.save(request.toEntity(user));
+                "점심 식비", 8000, "김밥천국", null, LocalDate.of(2025, 4, 21), null, "food");
 
         // when
-        AccountBookSpendResponse response = accountBookService.getSpendOne(accountBook.getId(), user.getId());
+        AccountBookSpendResponse response = accountBookService.getSpendOne(savedBooks.get(0).getId(), user.getId());
 
         // then
-        assertThat(response.title()).isEqualTo(accountBook.getTitle());
-        assertThat(response.category()).isEqualTo(accountBook.getCategory());
-        assertThat(response.amount()).isEqualTo(accountBook.getAmount());
-        assertThat(response.memo()).isEqualTo(accountBook.getMemo());
-        assertThat(response.endDate()).isEqualTo(accountBook.getEndDate());
-        assertThat(response.repeat().frequency()).isEqualTo(repeat.frequency());
-        assertThat(response.repeat().month()).isEqualTo(repeat.month());
-        assertThat(response.repeat().day()).isEqualTo(repeat.day());
+        assertThat(response.title()).isEqualTo(request.title());
+        assertThat(response.category()).isEqualTo("식비");
+        assertThat(response.amount()).isEqualTo(request.amount());
+        assertThat(response.memo()).isEqualTo(request.memo());
+        assertThat(response.occurredAt()).isEqualTo(request.occurredAt());
+        assertThat(response.repeat().frequency()).isNull();
+        assertThat(response.repeat().month()).isNull();
+        assertThat(response.repeat().day()).isNull();
     }
 
     @Test
@@ -121,22 +152,16 @@ public class AccountBookServiceIntegrationTest {
     void getSpendList() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
-        AccountBookSpendRequest request1 = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-        AccountBookSpendRequest request2 = new AccountBookSpendRequest(
-                "갤럭시S25 울트라", Category.SHOPPING, 1300000, "이건 못참지 ㅋ", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-        accountBookRepository.save(request1.toEntity(user));
-        accountBookRepository.save(request2.toEntity(user));
+        AccountBookListRequest listRequest = new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30));
 
         // when
-        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(user.getId());
+        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(user.getId(), listRequest);
 
         // then
-        assertThat(responses).hasSize(2);
+        assertThat(responses).hasSize(8);
         assertThat(responses)
                 .extracting(AccountBookSpendResponse::title)
-                .containsExactlyInAnyOrder("핫도그", "갤럭시S25 울트라");
+                .containsExactly("미용실", "옷 쇼핑", "헬스장 등록", "마트 장보기", "술자리", "카페", "점심 식비", "버스비");
         ;
     }
 
@@ -147,15 +172,16 @@ public class AccountBookServiceIntegrationTest {
         // given
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
+
         AccountBookSpendRequest request = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
+                "핫도그", 3000, "야식", endTime, occurredAt, repeat, "food");
 
         // when
         AccountBookSpendResponse response = accountBookService.createSpend(request, user);
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
-        assertThat(response.category()).isEqualTo(request.category());
+        assertThat(response.category()).isEqualTo("식비");
         assertThat(response.amount()).isEqualTo(request.amount());
         assertThat(response.memo()).isEqualTo(request.memo());
         assertThat(response.endDate()).isEqualTo(request.endDate());
@@ -172,19 +198,15 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
 
-        AccountBookSpendRequest originalRequest = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-        AccountBookSpendResponse created = accountBookService.createSpend(originalRequest, user);
-
         AccountBookSpendRequest modifiedRequest = new AccountBookSpendRequest(
-                "샐러드", Category.FOOD, 7000, "건강식", LocalDateTime.of(2025, 6, 1, 12, 0), repeat);
+                "샐러드", 7000, "건강식", LocalDateTime.of(2025, 6, 1, 12, 0), occurredAt, repeat, "food");
 
         // when
-        AccountBookSpendResponse response = accountBookService.modifySpend(modifiedRequest, created.id(), user.getId());
+        AccountBookSpendResponse response = accountBookService.modifySpend(modifiedRequest, savedBooks.get(0).getId(), user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(modifiedRequest.title());
-        assertThat(response.category()).isEqualTo(modifiedRequest.category());
+        assertThat(response.category()).isEqualTo("식비");
         assertThat(response.amount()).isEqualTo(modifiedRequest.amount());
         assertThat(response.memo()).isEqualTo(modifiedRequest.memo());
         assertThat(response.endDate()).isEqualTo(modifiedRequest.endDate());
@@ -201,7 +223,7 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
         AccountBookSpendRequest modifiedRequest = new AccountBookSpendRequest(
-                "샐러드", Category.FOOD, 7000, "건강식", LocalDateTime.of(2025, 6, 1, 12, 0), repeat);
+                "샐러드", 7000, "건강식", endTime, occurredAt, repeat, "food");
 
         // when
         // then
@@ -217,12 +239,9 @@ public class AccountBookServiceIntegrationTest {
         // given
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
-        AccountBookSpendRequest request = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-        AccountBook accountBook = accountBookRepository.save(request.toEntity(user));
 
         // when
-        boolean status = accountBookService.deleteSpend(accountBook.getId(), user.getId());
+        boolean status = accountBookService.deleteSpend(savedBooks.get(0).getId(), user.getId());
 
         // then
         assertThat(status).isTrue();
@@ -243,25 +262,25 @@ public class AccountBookServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("단건 수입 내역을 저장하고 조회한다.")
+    @DisplayName("수입을 상세 조회한다.")
     @WithMockUser(username = "test@test.com")
-    void getIncomOne() {
+    void getIncomeOne() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
+        Repeat repeat = new Repeat(Frequency.MONTHLY, null, 25);
         AccountBookIncomeRequest request = new AccountBookIncomeRequest(
-                "월급", Category.SALARY, 3000000, "회사 월급", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-        AccountBook accountBook = accountBookRepository.save(request.toEntity(user));
+                "급여", 3000000, "4월 급여", null,  LocalDate.of(2025, 4, 25), repeat, "salary");
 
         // when
-        AccountBookIncomeResponse response = accountBookService.getIncomeOne(accountBook.getId(), user.getId());
+        AccountBookIncomeResponse response = accountBookService.getIncomeOne(savedBooks.get(9).getId(), user.getId());
 
         // then
-        assertThat(response.title()).isEqualTo(accountBook.getTitle());
-        assertThat(response.category()).isEqualTo(accountBook.getCategory());
-        assertThat(response.amount()).isEqualTo(accountBook.getAmount());
-        assertThat(response.memo()).isEqualTo(accountBook.getMemo());
-        assertThat(response.endDate()).isEqualTo(accountBook.getEndDate());
+        assertThat(response.title()).isEqualTo(request.title());
+        assertThat(response.category()).isEqualTo("급여");
+        assertThat(response.amount()).isEqualTo(request.amount());
+        assertThat(response.memo()).isEqualTo(request.memo());
+        assertThat(response.endDate()).isEqualTo(request.endDate());
+        assertThat(response.occurredAt()).isEqualTo(request.occurredAt());
         assertThat(response.repeat().frequency()).isEqualTo(repeat.frequency());
         assertThat(response.repeat().month()).isEqualTo(repeat.month());
         assertThat(response.repeat().day()).isEqualTo(repeat.day());
@@ -287,23 +306,16 @@ public class AccountBookServiceIntegrationTest {
     void getIncomeList() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
-        AccountBookIncomeRequest request1 = new AccountBookIncomeRequest(
-                "월급", Category.FINANCE, 3000000, "회사 월급", LocalDateTime.of(2025, 5, 25, 0, 0), repeat);
-        AccountBookIncomeRequest request2 = new AccountBookIncomeRequest(
-                "부수입", Category.FINANCE, 500000, "프리랜서", LocalDateTime.of(2025, 5, 28, 0, 0), repeat);
-
-        accountBookRepository.save(request1.toEntity(user));
-        accountBookRepository.save(request2.toEntity(user));
+        AccountBookListRequest listRequest = new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30));
 
         // when
-        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(user.getId());
+        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(user.getId(), listRequest);
 
         // then
-        assertThat(responses).hasSize(2);
+        assertThat(responses).hasSize(3);
         assertThat(responses)
                 .extracting(AccountBookIncomeResponse::title)
-                .containsExactlyInAnyOrder("월급", "부수입");
+                .containsExactly("이체", "급여", "저축");
     }
 
     @Test
@@ -314,14 +326,14 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
         AccountBookIncomeRequest request = new AccountBookIncomeRequest(
-                "월급", Category.FINANCE, 3000000, "회사 월급", LocalDateTime.of(2025, 5, 25, 0, 0), repeat);
+                "월급", 3000000, "회사 월급", endTime, occurredAt, repeat, "salary");
 
         // when
         AccountBookIncomeResponse response = accountBookService.createIncome(request, user);
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
-        assertThat(response.category()).isEqualTo(request.category());
+        assertThat(response.category()).isEqualTo("급여");
         assertThat(response.amount()).isEqualTo(request.amount());
         assertThat(response.memo()).isEqualTo(request.memo());
         assertThat(response.endDate()).isEqualTo(request.endDate());
@@ -337,19 +349,15 @@ public class AccountBookServiceIntegrationTest {
         // given
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
-        AccountBookIncomeRequest originalRequest = new AccountBookIncomeRequest(
-                "월급", Category.FINANCE, 3000000, "회사 월급", LocalDateTime.of(2025, 5, 25, 0, 0), repeat);
-        AccountBookIncomeResponse created = accountBookService.createIncome(originalRequest, user);
-
         AccountBookIncomeRequest modifiedRequest = new AccountBookIncomeRequest(
-                "보너스", Category.FINANCE, 2000000, "성과급", LocalDateTime.of(2025, 6, 10, 0, 0), repeat);
+                "보너스", 2000000, "성과급", endTime, occurredAt, repeat, "salary");
 
         // when
-        AccountBookIncomeResponse response = accountBookService.modifyIncome(created.id(), modifiedRequest, user.getId());
+        AccountBookIncomeResponse response = accountBookService.modifyIncome(savedBooks.get(8).getId(), modifiedRequest, user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(modifiedRequest.title());
-        assertThat(response.category()).isEqualTo(modifiedRequest.category());
+        assertThat(response.category()).isEqualTo("급여");
         assertThat(response.amount()).isEqualTo(modifiedRequest.amount());
         assertThat(response.memo()).isEqualTo(modifiedRequest.memo());
         assertThat(response.endDate()).isEqualTo(modifiedRequest.endDate());
@@ -366,7 +374,7 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
         Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
         AccountBookIncomeRequest modifiedRequest = new AccountBookIncomeRequest(
-                "보너스", Category.FINANCE, 2000000, "성과급", LocalDateTime.of(2025, 6, 10, 0, 0), repeat);
+                "보너스", 2000000, "성과급", endTime, occurredAt, repeat, "salary");
 
         // when // then
         assertThatThrownBy(() -> accountBookService.modifyIncome(1L, modifiedRequest, user.getId()))
@@ -380,13 +388,9 @@ public class AccountBookServiceIntegrationTest {
     void deleteIncome() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
-        AccountBookIncomeRequest request = new AccountBookIncomeRequest(
-                "월급", Category.FINANCE, 3000000, "회사 월급", LocalDateTime.of(2025, 5, 25, 0, 0), repeat);
-        AccountBook accountBook = accountBookRepository.save(request.toEntity(user));
 
         // when
-        boolean status = accountBookService.deleteIncome(accountBook.getId(), user.getId());
+        boolean status = accountBookService.deleteIncome(savedBooks.get(8).getId(), user.getId());
 
         // then
         assertThat(status).isTrue();
@@ -399,8 +403,9 @@ public class AccountBookServiceIntegrationTest {
         // given
         UserEntity user = userDetails.user();
 
-        // when // then
-        assertThatThrownBy(() -> accountBookService.deleteIncome(1L, user.getId()))
+        // when
+        // then
+        assertThatThrownBy(() -> accountBookService.deleteIncome(0L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }
@@ -411,29 +416,13 @@ public class AccountBookServiceIntegrationTest {
     void getCategorySpendList() {
         // given
         UserEntity user = userDetails.user();
-        Repeat repeat = new Repeat(Frequency.MONTHLY, 1, 25);
-
-        AccountBookSpendRequest foodSpend1 = new AccountBookSpendRequest(
-                "햄버거", Category.FOOD, 8000, "점심", LocalDateTime.of(2025, 4, 10, 12, 0), repeat);
-
-        AccountBookSpendRequest foodSpend2 = new AccountBookSpendRequest(
-                "핫도그", Category.FOOD, 3000, "야식", LocalDateTime.of(2025, 5, 31, 0, 0), repeat);
-
-        AccountBookSpendRequest snackSpend = new AccountBookSpendRequest(
-                "초콜릿", Category.CAFE_SNACK, 2000, "디저트", LocalDateTime.of(2025, 4, 10, 15, 0), repeat);
-
-        accountBookRepository.save(foodSpend1.toEntity(user));
-        accountBookRepository.save(foodSpend2.toEntity(user));
-        accountBookRepository.save(snackSpend.toEntity(user));
 
         // when
-        List<AccountBookSpendResponse> foodResponses = accountBookService.getCategorySpendList(Category.FOOD, user.getId());
+        List<AccountBookSpendResponse> foodResponses = accountBookService.getCategorySpendList("food", user.getId());
 
         // then
-        assertThat(foodResponses).hasSize(2);
-        assertThat(foodResponses.get(0).title()).isEqualTo("핫도그");
-        assertThat(foodResponses.get(0).category()).isEqualTo(Category.FOOD);
-        assertThat(foodResponses.get(1).title()).isEqualTo("햄버거");
-        assertThat(foodResponses.get(1).category()).isEqualTo(Category.FOOD);
+        assertThat(foodResponses).hasSize(1);
+        assertThat(foodResponses.get(0).title()).isEqualTo("점심 식비");
+        assertThat(foodResponses.get(0).category()).isEqualTo("식비");
     }
 }

@@ -73,7 +73,7 @@ class AccountBookServiceUnitTest {
         UserEntity userEntity = mock(UserEntity.class);
         Category category = new Category("food", "식비");
         AccountBook accountBook = request.toEntity(userEntity, category);
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
         given(userRepository.existsById(userId)).willReturn(true);
 
         // when
@@ -89,7 +89,7 @@ class AccountBookServiceUnitTest {
         // given
         UserEntity userEntity = mock(UserEntity.class);
         given(userRepository.existsById(userId)).willReturn(true);
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.empty());
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.empty());
 
         // when
         // then
@@ -181,7 +181,7 @@ class AccountBookServiceUnitTest {
         AccountBookSpendRequest request = new AccountBookSpendRequest(
                 "커피", 5000, "스타벅스", LocalDateTime.of(2025, 4, 1, 0, 0), occurredAt, repeat, "cafe_snack");
 
-        given(accountBookRepository.findByIdAndUserId(id, userId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(id)).willReturn(Optional.of(accountBook));
         given(categoryRepository.findByCategory("cafe_snack")).willReturn(Optional.of(new Category("cafe_snack", "카페 / 간식")));
 
         // when
@@ -202,7 +202,7 @@ class AccountBookServiceUnitTest {
     void deleteSpend() {
         // given
         AccountBook accountBook = mock(AccountBook.class);
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
         boolean result = accountBookService.deleteSpend(accountBookId, userId);
@@ -215,7 +215,7 @@ class AccountBookServiceUnitTest {
     @DisplayName("소비 내역이 없으면 예외가 발생한다.")
     void failDeleteSpend() {
         // given
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.empty());
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.empty());
 
         // when
         // then
@@ -233,10 +233,10 @@ class AccountBookServiceUnitTest {
         UserEntity userEntity = mock(UserEntity.class);
         Category category = new Category("food", "식비");
         AccountBook accountBook = request.toEntity(userEntity, category);
-        given(accountBookRepository.findByIdAndUserId(userId, accountBookId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
-        AccountBookIncomeResponse result = accountBookService.getIncomeOne(userId, accountBookId);
+        AccountBookIncomeResponse result = accountBookService.getIncomeOne(accountBookId, userId);
 
         // then
         assertThat(result).isNotNull();
@@ -246,7 +246,7 @@ class AccountBookServiceUnitTest {
     @DisplayName("상세 수입 내역을 찾을 수 없으면 예외가 발생한다.")
     void failGetIncomeOne() {
         // given
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.empty());
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.empty());
 
         // when
         // then
@@ -334,7 +334,7 @@ class AccountBookServiceUnitTest {
         AccountBookIncomeRequest request = new AccountBookIncomeRequest("급여", 3000000, "곧 없어질 예정", LocalDateTime.of(2025, 12, 31, 23, 59, 59), occurredAt, repeat, "salary");
 
 
-        given(accountBookRepository.findByIdAndUserId(id, userId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(id)).willReturn(Optional.of(accountBook));
         given(categoryRepository.findByCategory("salary")).willReturn(Optional.of(new Category("salary", "급여")));
 
         // when
@@ -354,7 +354,7 @@ class AccountBookServiceUnitTest {
     void deleteIncome() {
         // given
         AccountBook accountBook = mock(AccountBook.class);
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.of(accountBook));
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
         boolean result = accountBookService.deleteSpend(accountBookId, userId);
@@ -367,7 +367,7 @@ class AccountBookServiceUnitTest {
     @DisplayName("소비 내역이 없으면 예외가 발생한다.")
     void failDeleteIncome() {
         // given
-        given(accountBookRepository.findByIdAndUserId(accountBookId, userId)).willReturn(Optional.empty());
+        given(accountBookRepository.findById(accountBookId)).willReturn(Optional.empty());
 
         // when
         // then
