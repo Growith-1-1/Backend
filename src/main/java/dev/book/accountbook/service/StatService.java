@@ -15,11 +15,10 @@ import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -33,9 +32,11 @@ public class StatService {
     @Transactional
     public List<AccountBookStatResponse> statList(Long userId, Frequency frequency) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        List<AccountBookStatResponse> statResponses =  getStatList(userId, frequency.calcStartDate());
+        List<AccountBookStatResponse> statResponses = getStatList(userId, frequency.calcStartDate());
+
         if (!statResponses.isEmpty()) //거래 내역이 존재하는 소비 분석을 진행 했을 경우
             eventPublisher.publishEvent(new CheckSpendAnalysisEvent(user));
+
         return statResponses;
     }
 
@@ -53,13 +54,13 @@ public class StatService {
         return getConsume(user, frequency.calcPeriod());
     }
 
-    private List<AccountBookStatResponse> getStatList(Long userId, LocalDateTime startDate) {
+    private List<AccountBookStatResponse> getStatList(Long userId, LocalDate startDate) {
 
-        return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDateTime.now(), CategoryType.SPEND, PageRequest.of(0, 3));
+        return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDate.now(), CategoryType.SPEND);
     }
 
-    private List<AccountBookSpendResponse> getCategoryList(Long userId, String category, LocalDateTime starDate) {
-        List<AccountBook> responses = accountBookRepository.findByCategory(userId, CategoryType.SPEND, category, starDate, LocalDateTime.now());
+    private List<AccountBookSpendResponse> getCategoryList(Long userId, String category, LocalDate starDate) {
+        List<AccountBook> responses = accountBookRepository.findByCategory(userId, CategoryType.SPEND, category, starDate, LocalDate.now());
 
         return responses.stream()
                 .map(AccountBookSpendResponse::from)

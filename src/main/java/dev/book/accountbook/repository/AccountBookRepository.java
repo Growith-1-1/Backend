@@ -6,7 +6,6 @@ import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.challenge.rank.dto.response.RankResponse;
 import dev.book.global.entity.Category;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -61,15 +60,15 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                     JOIN ab.category c
                     WHERE ab.user.id = :userId
                       AND ab.occurredAt BETWEEN :startDate AND :endDate
+                      AND ab.type = :categoryType
                     GROUP BY c.korean
                     ORDER BY SUM(ab.amount) DESC
             """)
     List<AccountBookStatResponse> findTopCategoriesByUserAndPeriod(
             @Param("userId") Long userId,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("categoryType") CategoryType categoryType,
-            Pageable pageable
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("categoryType") CategoryType categoryType
     );
 
     @Query("""
@@ -86,14 +85,13 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
             @Param("categoryName") String categoryName,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     @Query("""
                 SELECT COALESCE(SUM(a.amount), 0)
                 FROM AccountBook a
-                JOIN a.category c
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
                   AND a.occurredAt BETWEEN :startDate AND :endDate
@@ -101,8 +99,8 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
     Integer sumSpending(
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
     @EntityGraph(attributePaths = {"category"})
@@ -163,10 +161,10 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             GROUP BY u.id
             """)
     List<AccountBookWeekConsumePerUserResponse> findUserAndAmountByConsumeOfWeek(
-                                                    @Param("startDate") LocalDateTime startDate,
-                                                    @Param("endDate") LocalDateTime endDate,
-                                                    @Param("lastStartDate") LocalDateTime lastStartDate,
-                                                    @Param("lastEndDate") LocalDateTime lastEndDate
+                                                    @Param("startDate") LocalDate startDate,
+                                                    @Param("endDate") LocalDate endDate,
+                                                    @Param("lastStartDate") LocalDate lastStartDate,
+                                                    @Param("lastEndDate") LocalDate lastEndDate
     );
 
     @Query("""

@@ -6,71 +6,70 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @RequiredArgsConstructor
 public enum Frequency {
     DAILY("daily") {
         @Override
-        public LocalDateTime calcStartDate() {
-            return LocalDate.now().atStartOfDay();
+        public LocalDate calcStartDate() {
+            return LocalDate.now();
         }
 
         @Override
         public PeriodRange calcPeriod() {
-            LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime yesterdayStart = getYesterdayStart();
-            LocalDateTime yesterdayEnd = getYesterdayEnd();
+            LocalDate todayStart = LocalDate.now();
+            LocalDate now = LocalDate.now();
+            LocalDate yesterdayStart = getYesterdayStart();
+            LocalDate yesterdayEnd = getYesterdayEnd();
 
             return new PeriodRange(todayStart, now, yesterdayStart, yesterdayEnd);
         }
     },
     WEEKLY("weekly") {
         @Override
-        public LocalDateTime calcStartDate() {
+        public LocalDate calcStartDate() {
             return getStartOfCurrentWeek();
         }
 
         @Override
         public PeriodRange calcPeriod() {
-            LocalDateTime thisWeekStart = getStartOfCurrentWeek();
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime lastWeekStart = thisWeekStart.minusWeeks(1);
-            LocalDateTime lastWeekEnd = thisWeekStart.minusSeconds(1);
+            LocalDate thisWeekStart = getStartOfCurrentWeek();
+            LocalDate now = LocalDate.now();
+            LocalDate lastWeekStart = thisWeekStart.minusWeeks(1);
+            LocalDate lastWeekEnd = thisWeekStart.minusDays(1);
 
             return new PeriodRange(thisWeekStart, now, lastWeekStart, lastWeekEnd);
         }
     },
     MONTHLY("monthly") {
         @Override
-        public LocalDateTime calcStartDate() {
+        public LocalDate calcStartDate() {
             return getStartOfCurrentMonth();
         }
 
         @Override
         public PeriodRange calcPeriod() {
-            LocalDateTime thisMonthStart = getStartOfCurrentMonth();
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime lastMonthStart = thisMonthStart.minusMonths(1);
-            LocalDateTime lastMonthEnd = thisMonthStart.minusSeconds(1);
+            LocalDate thisMonthStart = getStartOfCurrentMonth();
+            LocalDate now = LocalDate.now();
+            LocalDate lastMonthStart = thisMonthStart.minusMonths(1);
+            LocalDate lastMonthEnd = thisMonthStart.minusDays(1);
 
             return new PeriodRange(thisMonthStart, now, lastMonthStart, lastMonthEnd);
         }
     },
     YEARLY("yearly") {
         @Override
-        public LocalDateTime calcStartDate() {
+        public LocalDate calcStartDate() {
             return getStartOfCurrentYear();
         }
 
         @Override
         public PeriodRange calcPeriod() {
-            LocalDateTime thisYearStart = getStartOfCurrentYear();
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime lastYearStart = thisYearStart.minusYears(1);
-            LocalDateTime lastYearEnd = thisYearStart.minusSeconds(1);
+            LocalDate thisYearStart = getStartOfCurrentYear();
+            LocalDate now = LocalDate.now();
+            LocalDate lastYearStart = thisYearStart.minusYears(1);
+            LocalDate lastYearEnd = thisYearStart.minusDays(1);
 
             return new PeriodRange(thisYearStart, now, lastYearStart, lastYearEnd);
         }
@@ -78,55 +77,51 @@ public enum Frequency {
     LAST_WEEKLY("last_weekly") {
 
         @Override
-        public LocalDateTime calcStartDate() {
+        public LocalDate calcStartDate() {
             return getStartOfCurrentWeek().minusWeeks(1); //이번주의 -1
         }
 
         @Override
         public PeriodRange calcPeriod() {
-            LocalDateTime lastWeekStart = calcStartDate();
-            LocalDateTime lastWeekEnd = lastWeekStart.with(DayOfWeek.SUNDAY).with(LocalTime.MAX);
-            LocalDateTime twoWeekAgoStart = lastWeekStart.minusWeeks(1);
-            LocalDateTime twoWeeksAgoEnd = lastWeekEnd.minusWeeks(1);
+            LocalDate lastWeekStart = calcStartDate();
+            LocalDate lastWeekEnd = lastWeekStart.with(DayOfWeek.SUNDAY).with(LocalTime.MAX);
+            LocalDate twoWeekAgoStart = lastWeekStart.minusWeeks(1);
+            LocalDate twoWeeksAgoEnd = lastWeekEnd.minusWeeks(1);
 
         return new PeriodRange(lastWeekStart, lastWeekEnd, twoWeekAgoStart, twoWeeksAgoEnd);
     }
     };
 
-    public abstract LocalDateTime calcStartDate();
+    public abstract LocalDate calcStartDate();
 
     public abstract PeriodRange calcPeriod();
 
 
-    private static LocalDateTime getStartOfCurrentWeek() {
+    private static LocalDate getStartOfCurrentWeek() {
         return LocalDate.now()
-                .with(DayOfWeek.MONDAY)
-                .atStartOfDay();
+                .with(DayOfWeek.MONDAY);
     }
 
-    private static LocalDateTime getStartOfCurrentMonth() {
+    private static LocalDate getStartOfCurrentMonth() {
         return LocalDate.now()
-                .withDayOfMonth(1)
-                .atStartOfDay();
+                .withDayOfMonth(1);
     }
 
-    private static LocalDateTime getYesterdayStart() {
+    private static LocalDate getYesterdayStart() {
         return LocalDate.now()
-                .minusDays(1)
-                .atStartOfDay();
+                .minusDays(1);
     }
 
-    private static LocalDateTime getYesterdayEnd() {
+    private static LocalDate getYesterdayEnd() {
         return LocalDate.now()
-                .minusDays(1)
-                .atTime(LocalTime.MAX);
+                .minusDays(1);
     }
 
-    private static LocalDateTime getStartOfCurrentYear() {
+    private static LocalDate getStartOfCurrentYear() {
         return LocalDate.now()
-                .withDayOfYear(1)
-                .atStartOfDay();
+                .withDayOfYear(1);
     }
+
     private final String lower;
 
     @JsonValue

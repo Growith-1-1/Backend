@@ -1,6 +1,6 @@
 package dev.book.accountbook.type;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
-public record PeriodRange(LocalDateTime currentStart, LocalDateTime currentEnd, LocalDateTime previousStart, LocalDateTime previousEnd) {
+public record PeriodRange(LocalDate currentStart, LocalDate currentEnd, LocalDate previousStart, LocalDate previousEnd) {
 }

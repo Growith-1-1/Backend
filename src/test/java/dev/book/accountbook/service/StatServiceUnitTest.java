@@ -7,7 +7,6 @@ import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.accountbook.type.Frequency;
-import dev.book.achievement.achievement_user.IndividualAchievementStatusService;
 import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.repository.UserRepository;
@@ -17,10 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +30,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 class StatServiceUnitTest {
     @Mock
-    private IndividualAchievementStatusService individualAchievementStatusService;
+    ApplicationEventPublisher publisher;
     @Mock
     private AccountBookRepository accountBookRepository;
     @Mock
@@ -48,7 +46,7 @@ class StatServiceUnitTest {
         // given
         UserEntity user = mock(UserEntity.class);
         Frequency frequency = Frequency.MONTHLY;
-        LocalDateTime start = frequency.calcStartDate();
+        LocalDate start = frequency.calcStartDate();
         List<AccountBookStatResponse> mockResponses = List.of(
                 new AccountBookStatResponse("food", 10000L),
                 new AccountBookStatResponse("cafe_snack", 8000L),
@@ -56,7 +54,7 @@ class StatServiceUnitTest {
         );
 
         given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-        given(accountBookRepository.findTopCategoriesByUserAndPeriod(anyLong(), eq(start), any(LocalDateTime.class), any() ,any(Pageable.class)))
+        given(accountBookRepository.findTopCategoriesByUserAndPeriod(anyLong(), eq(start), any(LocalDate.class), any()))
                 .willReturn(mockResponses);
 
         // when
@@ -80,7 +78,7 @@ class StatServiceUnitTest {
         );
 
         given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-        given(accountBookRepository.findByCategory(anyLong(), any(), any(), any(LocalDateTime.class), any(LocalDateTime.class))).willReturn(mockBooks);
+        given(accountBookRepository.findByCategory(anyLong(), any(), any(), any(LocalDate.class), any(LocalDate.class))).willReturn(mockBooks);
 
         // when
         List<AccountBookSpendResponse> result = statService.categoryList(user.getId(), frequency, "hobby");
