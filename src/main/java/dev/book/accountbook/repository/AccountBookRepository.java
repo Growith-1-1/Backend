@@ -31,7 +31,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                     AND a.occurredAt BETWEEN :startDate AND :endDate
                 ORDER BY a.occurredAt DESC
             """)
-    List<AccountBook> findAllTypeAndPeriod(
+    List<AccountBook> findAllByTypeAndPeriod(
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
             @Param("startDate") LocalDate startDate,
@@ -78,8 +78,8 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
                   AND c.category = :categoryName
-                  AND a.updatedAt BETWEEN :startDate AND :endDate
-                ORDER BY a.updatedAt DESC
+                  AND a.occurredAt BETWEEN :startDate AND :endDate
+                ORDER BY a.occurredAt DESC
             """)
     List<AccountBook> findByCategory(
             @Param("userId") Long userId,
@@ -95,7 +95,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 JOIN a.category c
                 WHERE a.user.id = :userId
                   AND a.type = :categoryType
-                  AND a.updatedAt BETWEEN :startDate AND :endDate
+                  AND a.occurredAt BETWEEN :startDate AND :endDate
             """)
     Integer sumSpending(
             @Param("userId") Long userId,
