@@ -9,6 +9,7 @@ import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
+import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.accountbook.type.Frequency;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -60,6 +61,9 @@ public class AccountBookServiceIntegrationTest {
     @Autowired
     private AccountBookRepository accountBookRepository;
 
+    @Autowired
+    private BudgetRepository budgetRepository;
+
     @BeforeEach
     public void mockMvcSetUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -105,8 +109,9 @@ public class AccountBookServiceIntegrationTest {
 
     @AfterEach
     public void cleanUp() {
-        userRepository.deleteAllInBatch();
+        budgetRepository.deleteAllInBatch();
         accountBookRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
     }
 
     @Test

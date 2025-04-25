@@ -97,8 +97,8 @@ public class StatServiceIntegrationTest {
 
     @AfterEach
     public void cleanUp() {
-        userRepository.deleteAllInBatch();
         accountBookRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
     }
 
     @Test
