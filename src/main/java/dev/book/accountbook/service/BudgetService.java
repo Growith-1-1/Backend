@@ -27,20 +27,24 @@ public class BudgetService {
     private final ApplicationEventPublisher eventPublisher;
 
     public BudgetResponse getBudget(Long id, Long userId) {
+        int month = getThisMonth();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        Budget budget = budgetRepository.findByIdAndMonthAndUserId(id, month, user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
 
-        return budgetRepository.findBudgetWithTotal(id);
+        return budgetRepository.findBudgetWithTotal(budget.getId());
     }
 
     @Transactional
-    public BudgetResponse createBudget(UserEntity user, BudgetRequest budgetRequest) {
-        validAlreadyExistBudget(user.getId());
+    public BudgetResponse createBudget(Long userId, BudgetRequest budgetRequest) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        validAlreadyExistBudget(userEntity.getId());
 
-        int date = LocalDate.now().getMonthValue();
-        budgetRepository.save(new Budget(budgetRequest.budget(), date, user));
+        int date = getThisMonth();
+        Budget budget = budgetRepository.save(new Budget(budgetRequest.budget(), date, userEntity));
 
-        eventPublisher.publishEvent(new CreateBudgetEvent(user));
-        return budgetRepository.findBudgetWithTotal(user.getId());
+        eventPublisher.publishEvent(new CreateBudgetEvent(userEntity));
+
+        return budgetRepository.findBudgetWithTotal(budget.getId());
     }
 
     @Transactional
@@ -49,7 +53,7 @@ public class BudgetService {
         budget.modifyBudget(budgetRequest.budget());
         budgetRepository.flush();
 
-        return budgetRepository.findBudgetWithTotal(userId);
+        return budgetRepository.findBudgetWithTotal(budget.getId());
     }
 
     @Transactional
@@ -67,5 +71,9 @@ public class BudgetService {
     private Budget findBudgetIdAndUserId(Long budgetId, Long userId) {
 
         return budgetRepository.findByIdAndUserId(budgetId, userId).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
+    }
+
+    private int getThisMonth() {
+        return LocalDate.now().getMonthValue();
     }
 }

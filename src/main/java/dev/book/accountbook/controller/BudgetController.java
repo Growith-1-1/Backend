@@ -28,7 +28,8 @@ public class BudgetController implements BudgetApi {
     @Override
     @PostMapping
     public ResponseEntity<BudgetResponse> createBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BudgetRequest budgetRequest) {
-        BudgetResponse response = budgetService.createBudget(userDetails.user(), budgetRequest);
+        Long userId = userDetails.user().getId();
+        BudgetResponse response = budgetService.createBudget(userId, budgetRequest);
 
         return ResponseEntity.ok(response);
     }
