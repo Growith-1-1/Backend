@@ -1,9 +1,14 @@
 package dev.book.accountbook.scheduler;
 
+import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.accountbook.dto.response.AccountBookWeekConsumePerUserResponse;
 import dev.book.accountbook.entity.Budget;
+import dev.book.accountbook.entity.Codef;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
+import dev.book.accountbook.repository.CodefRepository;
+import dev.book.accountbook.repository.TempAccountBookRepository;
+import dev.book.accountbook.service.CodefService;
 import dev.book.accountbook.service.StatService;
 import dev.book.accountbook.type.Frequency;
 import dev.book.accountbook.type.PeriodRange;
@@ -24,10 +29,12 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class AccountBookScheduler {
-
+    private final CodefRepository codefRepository;
     private final BudgetRepository budgetRepository;
     private final AccountBookRepository accountBookRepository;
+    private final TempAccountBookRepository tempAccountBookRepository;
 
+    private final CodefService codefService;
     private final StatService statService;
     private final IndividualAchievementStatusService individualAchievementStatusService;
     private final ApplicationEventPublisher eventPublisher;
@@ -36,7 +43,7 @@ public class AccountBookScheduler {
 
     @Scheduled(cron = "0 0 0 1 * *", zone = "Asia/Seoul") //매월 1일마다 예산 계획 성공 여부
     @Transactional
-    public void checkBudgetSuccessfulOrNot(){
+    public void checkBudgetSuccessfulOrNot() {
         int lastMonth = LocalDate.now().minusMonths(1).getMonth().getValue();
         //저번 달 예산 계획을 세운 사람들
         List<Budget> budgets = budgetRepository.findAllByMonthWithUser(lastMonth);
@@ -49,9 +56,9 @@ public class AccountBookScheduler {
     }
 
     private void getLastMonthBudgetAndCheckSuccessUser(List<Budget> budgets) {
-        for (Budget budget : budgets){
+        for (Budget budget : budgets) {
             int lastMonthBudget = statService.getTotalConsumeOfLastMonth(budget.getUser().getId());
-            if (lastMonthBudget < budget.getBudgetLimit()){
+            if (lastMonthBudget < budget.getBudgetLimit()) {
                 // 저번 달 예산 계획과 비교하여 % 이상 절약한 사람들에게 업적 달성
                 calcSavedRateAndAchieveBudget(budget.getUser(), budget.getBudgetLimit(), lastMonthBudget);
             }
@@ -69,13 +76,18 @@ public class AccountBookScheduler {
     }
 
     @Scheduled(cron = "0 0 21 * * *")
-    public void synchronizeAccount(){
+    public void synchronizeAccount() {
+        List<Codef> codefList = codefRepository.findAllCodefWithUserCreatedBeforeToday();
 
+        for (Codef codef : codefList) {
+            tempAccountBookRepository.saveAll(codefService.getTransactions(codef.getUser()));
+            eventPublisher.publishEvent(new CreateTransEvent(codef.getUser()));
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * MON", zone = "Asia/Seoul") //매주 월요일마다 주의 소비내역 비교
     @Transactional
-    public void checkConsumeOfWeekEveryMonday(){
+    public void checkConsumeOfWeekEveryMonday() {
         PeriodRange periodRange = Frequency.LAST_WEEKLY.calcPeriod();
         //저번주 일주일, 저저번주의 일주일의 소비 내역을 가져와서 비교
         List<AccountBookWeekConsumePerUserResponse> accountBooks = accountBookRepository.findUserAndAmountByConsumeOfWeek(periodRange.currentStart(), periodRange.currentEnd(), periodRange.previousStart(), periodRange.previousEnd());
@@ -85,9 +97,9 @@ public class AccountBookScheduler {
     private void calcSavedRateAndAchieveWeek(UserEntity user, long lastWeekAmount, long twoWeeksAgoAmount) {
         if (twoWeeksAgoAmount > 0 && lastWeekAmount > 0) {
             double savedRate = ((double) (twoWeeksAgoAmount - lastWeekAmount) / twoWeeksAgoAmount) * 100;
+
             if (savedRate >= LIMIT_SAVE_RATE)
                 eventPublisher.publishEvent(new SaveConsumeOfWeekEvent(user, savedRate));
         }
     }
-
 }

@@ -6,6 +6,7 @@ import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.challenge.rank.dto.response.RankResponse;
 import dev.book.global.entity.Category;
+import dev.book.user.entity.UserEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,11 +39,9 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             @Param("endDate") LocalDate endDate
     );
 
-    @EntityGraph(attributePaths = {"category"})
     @Query("""
             SELECT a
             FROM AccountBook a
-                JOIN a.category c
                 WHERE a.user.id = :userId
                     AND a.occurredAt BETWEEN :startDate AND :endDate
                 ORDER BY a.occurredAt DESC
@@ -178,4 +176,6 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                                     @Param("startDate") LocalDate startDate,
                                     @Param("endDate") LocalDate endDate
     );
+
+    void deleteAllByUser(UserEntity user);
 }

@@ -86,10 +86,10 @@ class BudgetServiceUnitTest {
     void getBudget() {
         // given
         Long budgetId = 1L;
-        UserEntity user = mock(UserEntity.class);
-        Budget budget = new Budget(10000, 4, user);
-        BudgetResponse budgetResponse = new BudgetResponse(budgetId, 10000, 4);
         int month = LocalDate.now().getMonthValue();
+        UserEntity user = mock(UserEntity.class);
+        Budget budget = new Budget(10000, month, user);
+        BudgetResponse budgetResponse = new BudgetResponse(budgetId, 10000, 4);
 
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
         given(budgetRepository.findByIdAndMonthAndUserId(budgetId, month, user.getId())).willReturn(Optional.of(budget));

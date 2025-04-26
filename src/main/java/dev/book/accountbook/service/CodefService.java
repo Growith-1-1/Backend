@@ -1,12 +1,17 @@
 package dev.book.accountbook.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.accountbook.dto.request.CreateConnectedIdRequest;
 import dev.book.accountbook.entity.Codef;
+import dev.book.accountbook.entity.TempAccountBook;
 import dev.book.accountbook.exception.codef.CodefErrorCode;
 import dev.book.accountbook.exception.codef.CodefErrorException;
 import dev.book.accountbook.repository.CodefRepository;
+import dev.book.accountbook.repository.TempAccountBookRepository;
+import dev.book.accountbook.type.CategoryType;
 import dev.book.global.util.RsaEncryptUtil;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.exception.UserErrorCode;
@@ -14,6 +19,7 @@ import dev.book.user.exception.UserErrorException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +28,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +49,12 @@ public class CodefService {
     private final String transactions = "https://development.codef.io/v1/kr/bank/p/account/transaction-list";
 
     private final CodefRepository codefRepository;
+    private final TempAccountBookRepository tempAccountBookRepository;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final RsaEncryptUtil rsaEncryptUtil;
+    private final ApplicationEventPublisher publisher;
 
     public String getAccessToken() {
         try {
@@ -79,17 +88,20 @@ public class CodefService {
         }
 
         validationCode(code);
-
         codefRepository.save(createRequest.toEntity(user, createRequest.bank().getCode(), createRequest.accountNumber(), connectedId));
+        tempAccountBookRepository.saveAll(getTransactions(user));
+
+        publisher.publishEvent(new CreateTransEvent(user));
 
         return true;
     }
 
-    public String getTransactions(UserEntity user) {
+    public List<TempAccountBook> getTransactions(UserEntity user) {
         HttpEntity<Map<String, Object>> request = createTransRequest(user);
         ResponseEntity<String> response = restTemplate.postForEntity(transactions, request, String.class);
+        String decodeResponse = URLDecoder.decode(response.getBody(), StandardCharsets.UTF_8);
 
-        return URLDecoder.decode(response.getBody(), StandardCharsets.UTF_8);
+        return mapToAccountBooks(decodeResponse, user);
     }
 
     private HttpEntity<String> getTokenRequest() {
@@ -138,19 +150,68 @@ public class CodefService {
         body.put("organization", codef.getBankCode());
         body.put("connectedId", codef.getConnectedId());
         body.put("account", codef.getAccount());
+        body.put("orderBy", "0");
+
+        if (user.getCreatedAt().toLocalDate().isEqual(LocalDate.now())) {
+            String startDate = LocalDate.now().minusDays(90)
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+            body.put("startDate", startDate);
+            body.put("endDate", today);
+
+            return new HttpEntity<>(body, headers);
+        }
+
         body.put("startDate", today);
         body.put("endDate", today);
-        body.put("orderBy", "0");
 
         return new HttpEntity<>(body, headers);
     }
 
     private void validationCode(String code) {
         switch (code) {
-            case "CF-00000" -> {}
+            case "CF-00000" -> {
+            }
             case "CF-12801", "CF-12803" -> throw new CodefErrorException(CodefErrorCode.INVALID_LOGIN_INFO);
             case "CF-12802" -> throw new CodefErrorException(CodefErrorCode.PASSWORD_ERROR_COUNT_EXCEEDED);
             default -> throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR, code);
         }
+    }
+
+    private List<TempAccountBook> mapToAccountBooks(String jsonString, UserEntity user) {
+        JsonNode root = null;
+
+        try {
+            root = objectMapper.readTree(jsonString);
+        } catch (Exception e) {
+            throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR);
+        }
+
+        JsonNode resTrHistoryList = root.path("data").path("resTrHistoryList");
+
+        List<TempAccountBook> accountBooks = new ArrayList<>();
+
+        for (JsonNode transaction : resTrHistoryList) {
+            String title = transaction.path("resAccountDesc2").asText();
+            String desc3 = transaction.path("resAccountDesc3").asText();
+            String desc4 = transaction.path("resAccountDesc4").asText();
+            String memo = desc3 + "_" + desc4;
+
+            int resAccountOut = transaction.path("resAccountOut").asInt();
+            int resAccountIn = transaction.path("resAccountIn").asInt();
+
+            boolean isIncome = resAccountIn > 0;
+            int amount = isIncome ? resAccountIn : resAccountOut;
+            CategoryType type = isIncome ? CategoryType.INCOME : CategoryType.SPEND;
+
+            String resAccountTrDate = transaction.path("resAccountTrDate").asText();
+            LocalDate occurredAt = LocalDate.parse(resAccountTrDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+            TempAccountBook accountBook = new TempAccountBook(title, memo, amount, type, user, occurredAt);
+
+            accountBooks.add(accountBook);
+        }
+
+        return accountBooks;
     }
 }

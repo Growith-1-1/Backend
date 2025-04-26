@@ -8,6 +8,7 @@ import dev.book.accountbook.exception.accountbook.AccountBookErrorCode;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
+import dev.book.accountbook.repository.TempAccountBookRepository;
 import dev.book.accountbook.type.BudgetLimit;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.achievement.achievement_user.dto.event.CreateFirstIncomeEvent;
@@ -35,9 +36,11 @@ import java.util.stream.Collectors;
 public class AccountBookService {
     private final UserRepository userRepository;
     private final BudgetRepository budgetRepository;
-    private final ApplicationEventPublisher publisher;
     private final CategoryRepository categoryRepository;
     private final AccountBookRepository accountBookRepository;
+    private final TempAccountBookRepository tempAccountBookRepository;
+
+    private final ApplicationEventPublisher publisher;
 
     @Transactional
     public AccountBookSpendResponse getSpendOne(Long id, Long userId) {
@@ -144,15 +147,16 @@ public class AccountBookService {
     public List<AccountBookSpendResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
         List<AccountBook> accountBookList = accountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
+        accountBookRepository.deleteAllByUser(user);
 
         return savedAccountBookList.stream()
                 .map(AccountBookSpendResponse::from)
                 .toList();
     }
 
-    public List<AccountBookPeriodResponse> getAccountBookPeriod(Long userId, AccountBookListRequest request) {
+    public List<AccountBookPeriodResponse> getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
         isExistsUser(userId);
-        List<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, request.startDate(), request.endDate());
+        List<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, startDate, endDate);
 
         return accountBookList.stream()
                 .map(AccountBookPeriodResponse::from)
@@ -263,6 +267,7 @@ public class AccountBookService {
 
     private void handleBudgetLimitAlert(UserEntity user) {
         int month = LocalDate.now().getMonthValue();
+
         budgetRepository.findByUserIdAndMonth(user.getId(), month)
                 .ifPresent(findBudget -> {
                     BudgetResponse response = budgetRepository.findBudgetByUserIdWithTotal(user.getId());
@@ -304,5 +309,14 @@ public class AccountBookService {
         }
 
         return "발송된 메시지가 없습니다.";
+    }
+
+    @Transactional
+    public List<TempAccountBookResponse> getTempList(Long userId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+
+        return tempAccountBookRepository.findByUserId(user.getId()).stream()
+                .map(TempAccountBookResponse::from)
+                .toList();
     }
 }
