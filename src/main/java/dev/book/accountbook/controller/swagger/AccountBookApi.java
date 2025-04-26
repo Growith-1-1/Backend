@@ -1,10 +1,7 @@
 package dev.book.accountbook.controller.swagger;
 
 import dev.book.accountbook.dto.request.*;
-import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
-import dev.book.accountbook.dto.response.AccountBookMonthResponse;
-import dev.book.accountbook.dto.response.AccountBookPeriodResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.*;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "가계부 API", description = "지출 / 수입 등록, 수정, 삭제, 조회")
@@ -423,7 +422,7 @@ public interface AccountBookApi {
                     )
             )
     )
-    ResponseEntity<List<AccountBookPeriodResponse>> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request);
+    ResponseEntity<List<AccountBookPeriodResponse>> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate);
 
     @Operation(
             summary = "지정 월 가계부 조회",
@@ -499,4 +498,43 @@ public interface AccountBookApi {
             )
     )
     ResponseEntity<List<AccountBookMonthResponse>> getMonthAccountBook(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookMonthRequest request);
+
+    @Operation(
+            summary = "임시 지출 목록 조회",
+            description = "임시 지출 목록을 조회합니다.."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "임시 지출 목록 조회 성공",
+            content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = TempAccountBookResponse.class)),
+                    examples = @ExampleObject(
+                            name = "임시 지출 생성 응답 예시",
+                            value = """
+                    [
+                      {
+                        "id": 1,
+                        "title": "편의점",
+                        "memo": "야식으로 컵라면",
+                        "amount": 4500,
+                        "type": "SPEND",
+                        "occurredAt": "2025-04-27",
+                        "userId": 5
+                      },
+                      {
+                        "id": 2,
+                        "title": "급여",
+                        "memo": "4월 월급",
+                        "amount": 3000000,
+                        "type": "INCOME",
+                        "occurredAt": "2025-04-25",
+                        "userId": 5
+                      }
+                    ]
+                    """
+                    )
+            )
+    )
+    ResponseEntity<List<TempAccountBookResponse>> getTempAccountBook(@AuthenticationPrincipal CustomUserDetails userDetails);
 }
