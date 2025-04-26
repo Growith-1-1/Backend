@@ -262,7 +262,8 @@ public class AccountBookService {
     }
 
     private void handleBudgetLimitAlert(UserEntity user) {
-        budgetRepository.findByUserId(user.getId())
+        int month = LocalDate.now().getMonthValue();
+        budgetRepository.findByUserIdAndMonth(user.getId(), month)
                 .ifPresent(findBudget -> {
                     BudgetResponse response = budgetRepository.findBudgetByUserIdWithTotal(user.getId());
                     double ratio = (double) response.total() / response.budget();
@@ -288,7 +289,8 @@ public class AccountBookService {
     }
 
     public String sendMessage(UserEntity user) {
-        Budget budget = budgetRepository.findByUserId(user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
+        int month = LocalDate.now().getMonthValue();
+        Budget budget = budgetRepository.findByUserIdAndMonth(user.getId(), month).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
         BudgetResponse response = budgetRepository.findBudgetByUserIdWithTotal(user.getId());
 
         double ratio = (double) response.total() / response.budget();

@@ -28,6 +28,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> , BudgetRe
             """)
     List<UserEntity> findUsersWithoutBudgetAtMonth(@Param("month") int month);
 
-    Optional<Budget> findByUserId(Long userId);
+    Optional<Budget> findByUserIdAndMonth(Long userId, int month);
     Optional<Budget> findByIdAndMonthAndUserId(Long id, Integer month, Long userId);
 }
