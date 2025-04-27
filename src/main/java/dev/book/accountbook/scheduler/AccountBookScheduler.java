@@ -4,6 +4,7 @@ import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.accountbook.dto.response.AccountBookWeekConsumePerUserResponse;
 import dev.book.accountbook.entity.Budget;
 import dev.book.accountbook.entity.Codef;
+import dev.book.accountbook.entity.TempAccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.repository.CodefRepository;
@@ -80,8 +81,11 @@ public class AccountBookScheduler {
         List<Codef> codefList = codefRepository.findAllCodefWithUserCreatedBeforeToday();
 
         for (Codef codef : codefList) {
-            tempAccountBookRepository.saveAll(codefService.getTransactions(codef.getUser()));
-            eventPublisher.publishEvent(new CreateTransEvent(codef.getUser()));
+            List<TempAccountBook> savedList = tempAccountBookRepository.saveAll(codefService.getTransactions(codef.getUser()));
+
+            if (!savedList.isEmpty()) {
+                eventPublisher.publishEvent(new CreateTransEvent(codef.getUser()));
+            }
         }
     }
 

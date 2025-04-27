@@ -62,7 +62,8 @@ public class CodefService {
             ResponseEntity<String> response = restTemplate.postForEntity(TOKEN_URL, entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                HashMap<String, Object> responseMap = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+                HashMap<String, Object> responseMap = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+                });
 
                 return (String) responseMap.get("access_token");
             } else {
@@ -89,9 +90,11 @@ public class CodefService {
 
         validationCode(code);
         codefRepository.save(createRequest.toEntity(user, createRequest.bank().getCode(), createRequest.accountNumber(), connectedId));
-        tempAccountBookRepository.saveAll(getTransactions(user));
+        List<TempAccountBook> savedList = tempAccountBookRepository.saveAll(getTransactions(user));
 
-        publisher.publishEvent(new CreateTransEvent(user));
+        if (!savedList.isEmpty()) {
+            publisher.publishEvent(new CreateTransEvent(user));
+        }
 
         return true;
     }
