@@ -23,7 +23,9 @@ import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,8 @@ public class AccountBookService {
     private final AccountBookRepository accountBookRepository;
     private final TempAccountBookRepository tempAccountBookRepository;
 
+    private final int PAGE_SIZE = 10;
+
     private final ApplicationEventPublisher publisher;
 
     @Transactional
@@ -51,12 +55,20 @@ public class AccountBookService {
     }
 
     @Transactional
-    public List<AccountBookSpendResponse> getSpendList(Long userId, AccountBookListRequest request) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByTypeAndPeriod(userId, CategoryType.SPEND, request.startDate(), request.endDate());
+    public AccountBookSpendListResponse getSpendList(Long userId, int page) {
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.SPEND, pageable);
 
-        return accountBooks.stream()
+        List<AccountBookSpendResponse> accountBookSpendResponseList = accountBooks.getContent().stream()
                 .map(AccountBookSpendResponse::from)
                 .toList();
+
+        return new AccountBookSpendListResponse(
+                accountBookSpendResponseList,
+                accountBooks.getTotalPages(),
+                accountBooks.getTotalElements(),
+                accountBooks.getNumber() + 1
+        );
     }
 
     @Transactional
@@ -97,12 +109,20 @@ public class AccountBookService {
     }
 
     @Transactional
-    public List<AccountBookIncomeResponse> getIncomeList(Long userId, AccountBookListRequest request) {
-        List<AccountBook> accountBooks = accountBookRepository.findAllByTypeAndPeriod(userId, CategoryType.INCOME, request.startDate(), request.endDate());
+    public AccountBookIncomeListResponse getIncomeList(Long userId, int page) {
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.INCOME, pageable);
 
-        return accountBooks.stream()
+        List<AccountBookIncomeResponse> accountBookIncomeResponseList = accountBooks.getContent().stream()
                 .map(AccountBookIncomeResponse::from)
                 .toList();
+
+        return new AccountBookIncomeListResponse(
+                accountBookIncomeResponseList,
+                accountBooks.getTotalPages(),
+                accountBooks.getTotalElements(),
+                accountBooks.getNumber() + 1
+        );
     }
 
     @Transactional
@@ -135,13 +155,21 @@ public class AccountBookService {
     }
 
     @Transactional
-    public List<AccountBookSpendResponse> getCategorySpendList(String category, Long userId) {
+    public AccountBookSpendListResponse getCategorySpendList(String category, Long userId, int page) {
         Category findCategory = getCategory(category);
-        List<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryNameWithGraph(userId, findCategory.getId(), PageRequest.of(0, 10));
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        Page<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryNameWithGraph(userId, findCategory.getId(), pageable);
 
-        return categorySpendList.stream()
+        List<AccountBookSpendResponse> accountBookSpendResponseList = categorySpendList.getContent().stream()
                 .map(AccountBookSpendResponse::from)
                 .toList();
+
+        return new AccountBookSpendListResponse(
+                accountBookSpendResponseList,
+                categorySpendList.getTotalPages(),
+                categorySpendList.getTotalElements(),
+                categorySpendList.getNumber() + 1
+        );
     }
 
     public List<AccountBookSpendResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
@@ -155,13 +183,21 @@ public class AccountBookService {
     }
 
     @Transactional
-    public List<AccountBookPeriodResponse> getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+    public AccountBookPeriodListResponse getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate, int page) {
         isExistsUser(userId);
-        List<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, startDate, endDate);
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        Page<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, startDate, endDate, pageable);
 
-        return accountBookList.stream()
+        List<AccountBookPeriodResponse> accountBookPeriodResponseList = accountBookList.getContent().stream()
                 .map(AccountBookPeriodResponse::from)
                 .toList();
+
+        return new AccountBookPeriodListResponse(
+                accountBookPeriodResponseList,
+                accountBookList.getTotalPages(),
+                accountBookList.getTotalElements(),
+                accountBookList.getNumber() + 1
+        );
     }
 
     public List<AccountBookMonthResponse> getMonthAccountBook(Long userId, AccountBookMonthRequest request) {

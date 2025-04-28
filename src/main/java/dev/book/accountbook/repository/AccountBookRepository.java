@@ -7,6 +7,7 @@ import dev.book.accountbook.type.CategoryType;
 import dev.book.challenge.rank.dto.response.RankResponse;
 import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,14 +30,12 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                 JOIN a.category c
                 WHERE a.user.id = :userId
                     AND a.type = :categoryType
-                    AND a.occurredAt BETWEEN :startDate AND :endDate
                 ORDER BY a.occurredAt DESC
             """)
-    List<AccountBook> findAllByTypeAndPeriod(
+    Page<AccountBook> findAllByType(
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            Pageable pageable
     );
 
     @EntityGraph(attributePaths = {"user", "category"})
@@ -47,10 +46,11 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                     AND a.occurredAt BETWEEN :startDate AND :endDate
                 ORDER BY a.occurredAt DESC
             """)
-    List<AccountBook> findAllPeriod(
+    Page<AccountBook> findAllPeriod(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
     );
 
     @Query("""
@@ -80,12 +80,13 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                   AND a.occurredAt BETWEEN :startDate AND :endDate
                 ORDER BY a.occurredAt DESC
             """)
-    List<AccountBook> findByCategory(
+    Page<AccountBook> findByCategory(
             @Param("userId") Long userId,
             @Param("categoryType") CategoryType categoryType,
             @Param("categoryName") String categoryName,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
     );
 
     @Query("""
@@ -111,7 +112,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
                   AND c.id = :categoryId
                 ORDER BY ab.occurredAt DESC, ab.id DESC
             """)
-    List<AccountBook> findByUserIdAndCategoryNameWithGraph(
+    Page<AccountBook> findByUserIdAndCategoryNameWithGraph(
             @Param("userId") Long userId,
             @Param("categoryId") Long categoryId,
             Pageable pageable

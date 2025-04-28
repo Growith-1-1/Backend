@@ -1,7 +1,10 @@
 package dev.book.accountbook.controller;
 
 import dev.book.accountbook.controller.swagger.AccountBookApi;
-import dev.book.accountbook.dto.request.*;
+import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
+import dev.book.accountbook.dto.request.AccountBookMonthRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.response.*;
 import dev.book.accountbook.service.AccountBookService;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -23,9 +26,9 @@ public class AccountBookController implements AccountBookApi {
 
     @Override
     @GetMapping("/spend")
-    public ResponseEntity<List<AccountBookSpendResponse>> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request) {
+    public ResponseEntity<AccountBookSpendListResponse> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page) {
         Long userId = userDetails.user().getId();
-        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(userId, request);
+        AccountBookSpendListResponse responses = accountBookService.getSpendList(userId, page);
 
         return ResponseEntity.ok(responses);
     }
@@ -34,7 +37,7 @@ public class AccountBookController implements AccountBookApi {
     @GetMapping("/spend/detail/{id}")
     public ResponseEntity<AccountBookSpendResponse> getSpendOne(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
         Long userId = userDetails.user().getId();
-        AccountBookSpendResponse response = accountBookService.getSpendOne(id,userId);
+        AccountBookSpendResponse response = accountBookService.getSpendOne(id, userId);
 
         return ResponseEntity.ok(response);
     }
@@ -68,9 +71,9 @@ public class AccountBookController implements AccountBookApi {
 
     @Override
     @GetMapping("/income")
-    public ResponseEntity<List<AccountBookIncomeResponse>> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookListRequest request) {
+    public ResponseEntity<AccountBookIncomeListResponse> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page) {
         Long userId = userDetails.user().getId();
-        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(userId, request);
+        AccountBookIncomeListResponse responses = accountBookService.getIncomeList(userId, page);
 
         return ResponseEntity.ok(responses);
     }
@@ -112,19 +115,19 @@ public class AccountBookController implements AccountBookApi {
     }
 
     @Override
-    @GetMapping("/spend/{category}")
-    public ResponseEntity<List<AccountBookSpendResponse>> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String category) {
+    @GetMapping("/spend/category")
+    public ResponseEntity<AccountBookSpendListResponse> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String category, @RequestParam int page) {
         Long userId = userDetails.user().getId();
-        List<AccountBookSpendResponse> responses = accountBookService.getCategorySpendList(category, userId);
+        AccountBookSpendListResponse responses = accountBookService.getCategorySpendList(category, userId, page);
 
         return ResponseEntity.ok(responses);
     }
 
     @Override
     @GetMapping("/all")
-    public ResponseEntity<List<AccountBookPeriodResponse>> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
+    public ResponseEntity<AccountBookPeriodListResponse> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate, @RequestParam int page) {
         Long userId = userDetails.user().getId();
-        List<AccountBookPeriodResponse> responseList = accountBookService.getAccountBookPeriod(userId, startDate, endDate);
+        AccountBookPeriodListResponse responseList = accountBookService.getAccountBookPeriod(userId, startDate, endDate, page);
 
         return ResponseEntity.ok(responseList);
     }
