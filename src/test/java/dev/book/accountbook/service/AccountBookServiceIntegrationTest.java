@@ -4,7 +4,9 @@ import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
 import dev.book.accountbook.dto.request.AccountBookListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.request.Repeat;
+import dev.book.accountbook.dto.response.AccountBookIncomeListResponse;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
+import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
@@ -157,14 +159,14 @@ public class AccountBookServiceIntegrationTest {
     void getSpendList() {
         // given
         UserEntity user = userDetails.user();
-        AccountBookListRequest listRequest = new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30));
 
         // when
-        List<AccountBookSpendResponse> responses = accountBookService.getSpendList(user.getId(), listRequest);
+        AccountBookSpendListResponse responses = accountBookService.getSpendList(user.getId(), 1);
 
         // then
-        assertThat(responses).hasSize(8);
-        assertThat(responses)
+        List<AccountBookSpendResponse> responseList = responses.accountBookSpendResponseList();
+        assertThat(responseList).hasSize(8);
+        assertThat(responseList)
                 .extracting(AccountBookSpendResponse::title)
                 .containsExactly("미용실", "옷 쇼핑", "헬스장 등록", "마트 장보기", "술자리", "카페", "점심 식비", "버스비");
         ;
@@ -314,11 +316,12 @@ public class AccountBookServiceIntegrationTest {
         AccountBookListRequest listRequest = new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30));
 
         // when
-        List<AccountBookIncomeResponse> responses = accountBookService.getIncomeList(user.getId(), listRequest);
+        AccountBookIncomeListResponse responses = accountBookService.getIncomeList(user.getId(), 1);
 
         // then
-        assertThat(responses).hasSize(3);
-        assertThat(responses)
+        List<AccountBookIncomeResponse> responseList = responses.accountBookIncomeResponseList();
+        assertThat(responseList).hasSize(3);
+        assertThat(responseList)
                 .extracting(AccountBookIncomeResponse::title)
                 .containsExactly("이체", "급여", "저축");
     }
@@ -423,11 +426,12 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        List<AccountBookSpendResponse> foodResponses = accountBookService.getCategorySpendList("food", user.getId());
+        AccountBookSpendListResponse foodResponses = accountBookService.getCategorySpendList("food", user.getId(), 1);
 
         // then
-        assertThat(foodResponses).hasSize(1);
-        assertThat(foodResponses.get(0).title()).isEqualTo("점심 식비");
-        assertThat(foodResponses.get(0).category()).isEqualTo("식비");
+        List<AccountBookSpendResponse> responseList = foodResponses.accountBookSpendResponseList();
+        assertThat(responseList).hasSize(1);
+        assertThat(responseList.get(0).title()).isEqualTo("점심 식비");
+        assertThat(responseList.get(0).category()).isEqualTo("식비");
     }
 }

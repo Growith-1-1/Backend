@@ -92,11 +92,11 @@ class BudgetServiceUnitTest {
         BudgetResponse budgetResponse = new BudgetResponse(budgetId, 10000, 4);
 
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
-        given(budgetRepository.findByIdAndMonthAndUserId(budgetId, month, user.getId())).willReturn(Optional.of(budget));
+        given(budgetRepository.findByMonthAndUserId(month, user.getId())).willReturn(Optional.of(budget));
         given(budgetRepository.findBudgetWithTotal(budget.getId())).willReturn(budgetResponse);
 
         // when
-        BudgetResponse response = budgetService.getBudget(1L, user.getId());
+        BudgetResponse response = budgetService.getBudget(user.getId(), LocalDate.now().getMonthValue());
 
         // then
         assertThat(response.budget()).isEqualTo(budget.getBudgetLimit());
@@ -113,7 +113,7 @@ class BudgetServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(budgetId, userId))
+        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now().getMonthValue()))
                 .isInstanceOf(UserErrorException.class)
                 .hasMessage("유저를 찾을 수 없습니다.");
     }
@@ -129,7 +129,7 @@ class BudgetServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(budgetId, userId))
+        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now().getMonthValue()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 예산입니다.");
     }
