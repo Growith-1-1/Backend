@@ -2,10 +2,12 @@ package dev.book.user.service;
 
 import dev.book.achievement.achievement_user.entity.AchievementUser;
 import dev.book.achievement.achievement_user.repository.AchievementUserRepository;
+import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.achievement.entity.Achievement;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import dev.book.global.config.security.jwt.JwtAuthenticationToken;
 import dev.book.global.config.security.jwt.JwtUtil;
+import dev.book.global.config.security.service.refresh.RefreshTokenService;
 import dev.book.global.entity.Category;
 import dev.book.global.exception.category.CategoryException;
 import dev.book.global.repository.CategoryRepository;
@@ -45,6 +47,11 @@ class UserServiceUnitTest {
 
     @InjectMocks
     private UserService userService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private IndividualAchievementStatusService individualAchievementStatusService;
 
     @Mock
     private UserRepository userRepository;
@@ -140,6 +147,8 @@ class UserServiceUnitTest {
         //then
         verify(jwtUtil).deleteAccessTokenAndRefreshToken(request, response);
         verify(userRepository).delete(userDetails.user());
+        verify(refreshTokenService).deleteRefreshToken(userDetails.user());
+        verify(individualAchievementStatusService).deleteIndividualAchievementStatus(userDetails.user());
     }
 
     @Test

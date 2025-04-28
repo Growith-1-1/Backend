@@ -24,7 +24,8 @@ import java.util.List;
 @Tag(name = "친구 API", description = "친구 초대 토큰 발급, 친구 조회, 친구 요청 관리, 삭제 api")
 public interface UserFriendApi {
 
-    @Operation(summary = "친구 초대 토큰 발급", description = "`카카오톡 공유하기` 전 친구 초대 토큰을 발급 후 포함하여 `공유하기`를 보냅니다.")
+    @Operation(summary = "친구 초대 토큰 발급", description = "`카카오톡 공유하기` 전 친구 초대 토큰을 발급 후 해당 토큰을 포함한 `/api/v1/friends/invite?token={token}` 링크를 포함하여 `공유하기`를 보냅니다." +
+                                                                    "\n\n 또한, serverCallBackArgs에 `invitingUserToken` : {token} 형식으로 넣어주시면 됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "친구 초대 토큰 발급 완료",
                     content = @Content(schema = @Schema(implementation = InvitingUserTokenResponseDto.class))),
@@ -36,7 +37,7 @@ public interface UserFriendApi {
     @Operation(summary= "카카오톡 웹훅용 (클라이언트 쪽 사용 X)", description = "카카오톡 웹 훅을 통해 `공유하기`가 성공했다는 것을 전달받는 api")
     ResponseEntity<?> getWebHookFromKakao(@RequestBody KakaoResponseDto kakaoResponseDto) throws Exception;
 
-    @Operation(summary = "`카카오톡 공유하기` 링크", description = "`카카오톡 공유하기` 통해 접근하는 URL, 친구 초대 토큰을 통해 친구 요청을 생성한다."
+    @Operation(summary = "`카카오톡 공유하기` 링크 (클라이언트 쪽 사용 X) ", description = "`카카오톡 공유하기` 통해 접근하는 URL, 친구 초대 토큰을 통해 친구 요청을 생성한다."
                                                                         + "\n 해당 링크에 접속하게 되면 /main 화면으로 리다이렉트 됩니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "친구 요청 생성 완료"),

@@ -14,7 +14,6 @@ import dev.book.global.config.Firebase.exception.FcmTokenErrorException;
 import dev.book.global.config.Firebase.repository.FcmTokenRepository;
 import dev.book.global.config.Firebase.service.FCMService;
 import dev.book.global.sse.service.SseService;
-import dev.book.global.sse.type.SseType;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.exception.UserErrorCode;
 import dev.book.user.exception.UserErrorException;
@@ -44,11 +43,11 @@ public class AchievementService {
      * @param userId
      */
     public void saveAchievement(Long achievementId, Long userId){
-        Achievement achievement = achievementRepository.findById(achievementId)
-                .orElseThrow(() -> new AchievementException(AchievementErrorCode.ACHIEVEMENT_BAD_REQUEST));
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        if (!achievementUserRepository.existsByAchievementAndUser(achievement, user)){ //업적이 존재하지 않으면 새로 등록
+        if (!achievementUserRepository.existsByAchievementIdAndUserId(achievementId, userId)){ //업적이 존재하지 않으면 새로 등록
+            Achievement achievement = achievementRepository.findById(achievementId)
+                    .orElseThrow(() -> new AchievementException(AchievementErrorCode.ACHIEVEMENT_BAD_REQUEST));
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
             AchievementUser achievementUser = new AchievementUser(user, achievement);
             achievementUserRepository.save(achievementUser);
             eventPublisher.publishEvent(new GetAchievementEvent(achievement, userId));

@@ -85,7 +85,7 @@ public class IndividualAchievementStatus {
         this.consecutiveLogins = 0;
     }
 
-    public long pluCheckSpendAnalysis(){
+    public long plusCheckSpendAnalysis(){
         return ++this.checkSpendAnalysis;
     }
 

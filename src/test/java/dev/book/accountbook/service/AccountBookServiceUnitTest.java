@@ -12,7 +12,7 @@ import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.accountbook.type.Frequency;
-import dev.book.achievement.achievement_user.IndividualAchievementStatusService;
+import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.global.entity.Category;
 import dev.book.global.repository.CategoryRepository;
