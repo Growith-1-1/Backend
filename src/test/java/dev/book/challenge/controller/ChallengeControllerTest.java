@@ -252,7 +252,7 @@ class ChallengeControllerTest {
 
         // given
         ChallengeParticipantResponse challengeParticipantResponse = new ChallengeParticipantResponse(
-                1L, "제목", 5000, 50000, 3, false);
+                1L, "제목", 5000, 50000, 3, false, false);
 
         given(challengeService.findMyChallenge(any(), anyInt(), anyInt())).willReturn(List.of(challengeParticipantResponse));
 
@@ -263,6 +263,7 @@ class ChallengeControllerTest {
                 .andExpect(jsonPath("$[0].totalSpend").value(5000))
                 .andExpect(jsonPath("$[0].amount").value(50000))
                 .andExpect(jsonPath("$[0].endDay").value(3))
-                .andExpect(jsonPath("$[0].isSuccess").value(false));
+                .andExpect(jsonPath("$[0].isSuccess").value(false))
+                .andExpect(jsonPath("$[0].isWriteTip").value(false));
     }
 }

@@ -35,6 +35,8 @@ public class SseService {
         emitter.onError((e) -> sseEmitterRepository.deleteEmitterById(emitterId));
 
         sendToClient(emitter, emitterId, "EventStream created. [userId= "+ userId + "]", null);
+        //구독 되었다는 것을 표시하는 eventCache
+
         if (!lastEventId.isEmpty()){
             Map<String, Object> events = sseEmitterRepository.findAllEventCacheStartsWithUserId(String.valueOf(userId));
             events.entrySet().stream()

@@ -13,7 +13,7 @@ import dev.book.accountbook.service.CodefService;
 import dev.book.accountbook.service.StatService;
 import dev.book.accountbook.type.Frequency;
 import dev.book.accountbook.type.PeriodRange;
-import dev.book.achievement.achievement_user.IndividualAchievementStatusService;
+import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.achievement.achievement_user.dto.event.SaveConsumeFromBudgetEvent;
 import dev.book.achievement.achievement_user.dto.event.SaveConsumeOfWeekEvent;
 import dev.book.achievement.achievement_user.dto.event.SuccessBudgetPlanEvent;

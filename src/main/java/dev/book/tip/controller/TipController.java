@@ -1,6 +1,7 @@
 package dev.book.tip.controller;
 
 import dev.book.global.config.security.dto.CustomUserDetails;
+import dev.book.tip.controller.swagger.TipApi;
 import dev.book.tip.dto.request.TipRequest;
 import dev.book.tip.service.TipService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/tips")
-public class TipController {
+public class TipController implements TipApi {
 
     private final TipService tipService;
 

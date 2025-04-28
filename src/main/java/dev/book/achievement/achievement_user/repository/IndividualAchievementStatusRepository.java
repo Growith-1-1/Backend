@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface IndividualAchievementStatusRepository extends JpaRepository<IndividualAchievementStatus, Long> {
     Optional<IndividualAchievementStatus> findByUser(UserEntity user);
+
+    void deleteByUser(UserEntity user);
 }

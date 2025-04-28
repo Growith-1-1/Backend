@@ -1,10 +1,15 @@
 package dev.book.user.entity;
 
+import dev.book.accountbook.entity.AccountBook;
+import dev.book.accountbook.entity.Budget;
 import dev.book.achievement.achievement_user.entity.AchievementUser;
+import dev.book.challenge.challenge_invite.entity.ChallengeInvite;
+import dev.book.challenge.entity.Challenge;
 import dev.book.challenge.user_challenge.entity.UserChallenge;
 import dev.book.global.config.security.dto.oauth2.OAuth2Attributes;
 import dev.book.global.entity.BaseTimeEntity;
 import dev.book.global.entity.Category;
+import dev.book.tip.entity.Tip;
 import dev.book.user.user_category.UserCategory;
 import dev.book.user.user_friend.entity.UserFriend;
 import jakarta.persistence.*;
@@ -54,15 +59,29 @@ public class UserEntity extends BaseTimeEntity {
     @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserFriend> receivedFriendRequests = new ArrayList<>(); //유저가 친구 요청 받음
 
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Challenge> challenges = new ArrayList<>();
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallenge> userChallenges = new ArrayList<>();
+
+    @OneToMany(mappedBy = "requestUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChallengeInvite> requestChallengeInvites = new ArrayList<>();
+
+    @OneToMany(mappedBy = "inviteUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChallengeInvite> receivedChallengeInvites = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AchievementUser> achievements = new ArrayList<>();
 
-    //todo 알림 설정 필요
-    //todo 이후 entity과의 관계 설정 필요
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AccountBook> accountBooks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Budget> bugets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tip> tips = new ArrayList<>();
 
     @Builder
     public UserEntity(String email, String name, String nickname, String profileImageUrl) {

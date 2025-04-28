@@ -1,4 +1,4 @@
-package dev.book.achievement.achievement_user;
+package dev.book.achievement.achievement_user.service;
 
 import dev.book.achievement.achievement_user.dto.event.*;
 import dev.book.achievement.achievement_user.entity.IndividualAchievementStatus;
@@ -59,7 +59,6 @@ public class IndividualAchievementStatusService {
             case 10 ->
                 achievementService.saveAchievement(3L, event.user().getId());
         }
-
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -67,9 +66,8 @@ public class IndividualAchievementStatusService {
     public void plusFailChallenge(FailChallengeEvent event) {
         IndividualAchievementStatus achievementStatus = getIndividualAchievementStatus(event.user());
         int failChallenge = achievementStatus.plusFailChallenge();
-        switch (failChallenge) {
-            case 1 ->
-                achievementService.saveAchievement(4L, event.user().getId());
+        if (failChallenge == 1) {
+            achievementService.saveAchievement(4L, event.user().getId());
         }
     }
 
@@ -88,9 +86,9 @@ public class IndividualAchievementStatusService {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pluCheckSpendAnalysis(CheckSpendAnalysisEvent event) {
+    public void plusCheckSpendAnalysis(CheckSpendAnalysisEvent event) {
         IndividualAchievementStatus achievementStatus = getIndividualAchievementStatus(event.user());
-        long checkSpendAnalysis = achievementStatus.pluCheckSpendAnalysis();
+        long checkSpendAnalysis = achievementStatus.plusCheckSpendAnalysis();
         if (checkSpendAnalysis == 1L)
             achievementService.saveAchievement(9L, event.user().getId());
     }
@@ -133,9 +131,8 @@ public class IndividualAchievementStatusService {
     public void plusConsecutiveNoSpend(ConsecutiveNoSpendEvent event) {
         IndividualAchievementStatus achievementStatus = getIndividualAchievementStatus(event.user());
         int consecutiveNoSpend = achievementStatus.plusConsecutiveNoSpend();
-        switch (consecutiveNoSpend) {
-            case 3 ->
-                achievementService.saveAchievement(13L, event.user().getId());
+        if (consecutiveNoSpend == 3) {
+            achievementService.saveAchievement(13L, event.user().getId());
         }
     }
 
@@ -190,7 +187,7 @@ public class IndividualAchievementStatusService {
         //절약 %가 상한선 이상이면서, 사전에 업적 달성한 적이 없는 경우를 판단
         if (event.saveRate() >= 10.0 && !achievementStatus.isSaveTenPercentFromBudget())
             saveTenPercentFromBudget(event.user().getId(), achievementStatus);
-        else if (event.saveRate() >= 5.0 && !achievementStatus.isSaveFivePercentFromBudget())
+        if (event.saveRate() >= 5.0 && !achievementStatus.isSaveFivePercentFromBudget())
             saveFivePercentFromBudget(event.user().getId(), achievementStatus);
     }
 
@@ -222,9 +219,8 @@ public class IndividualAchievementStatusService {
     public void plusInviteFriendToChallenge(InviteFriendToChallengeEvent event) {
         IndividualAchievementStatus achievementStatus = getIndividualAchievementStatus(event.user());
         int inviteFriendToChallenge = achievementStatus.plusInviteFriendToChallenge();
-        switch (inviteFriendToChallenge) {
-            case 1->
-                achievementService.saveAchievement(23L, event.user().getId());
+        if (inviteFriendToChallenge == 1) {
+            achievementService.saveAchievement(23L, event.user().getId());
         }
     }
 
@@ -244,5 +240,9 @@ public class IndividualAchievementStatusService {
     private IndividualAchievementStatus getIndividualAchievementStatus(UserEntity user) {
         return individualAchievementStatusRepository.findByUser(user)
                 .orElseGet(() -> individualAchievementStatusRepository.save(new IndividualAchievementStatus(user)));
+    }
+
+    public void deleteIndividualAchievementStatus(UserEntity user) {
+        individualAchievementStatusRepository.deleteByUser(user);
     }
 }
