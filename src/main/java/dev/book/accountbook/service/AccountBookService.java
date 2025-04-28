@@ -154,6 +154,7 @@ public class AccountBookService {
                 .toList();
     }
 
+    @Transactional
     public List<AccountBookPeriodResponse> getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
         isExistsUser(userId);
         List<AccountBook> accountBookList = accountBookRepository.findAllPeriod(userId, startDate, endDate);

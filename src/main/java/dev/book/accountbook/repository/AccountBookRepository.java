@@ -39,6 +39,7 @@ public interface AccountBookRepository extends JpaRepository<AccountBook, Long> 
             @Param("endDate") LocalDate endDate
     );
 
+    @EntityGraph(attributePaths = {"user", "category"})
     @Query("""
             SELECT a
             FROM AccountBook a
