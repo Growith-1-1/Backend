@@ -1,7 +1,7 @@
 package dev.book.accountbook.controller.swagger;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.type.Frequency;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -64,61 +64,70 @@ public interface StatApi {
             description = "주어진 기간(frequency)과 카테고리(category)를 기반으로 지출 목록을 조회합니다."
     )
     @Parameters({
-            @Parameter(name = "frequency", description = "조회 기준 기간 (daily, weekly, monthly)", example = "monthly",
-                    schema = @Schema(type = "string", allowableValues = {"daily", "weekly", "monthly"})),
-            @Parameter(name = "category", description = "조회할 카테고리", example = "food",
-                    schema = @Schema(
-                            type = "string",
-                            allowableValues = {
-                                    "food", "cafe_snack", "convenience_store", "alcohol_entertainment", "shopping",
-                                    "hobby", "health", "housing_communication", "finance", "beauty",
-                                    "transportation", "travel", "education", "living", "donation",
-                                    "card_payment", "deferred_payment", "none"
-                            }
-                    ))
+            @Parameter(
+                    name = "frequency",
+                    description = "조회 기준 기간 (daily, weekly, monthly)",
+                    example = "monthly",
+                    schema = @Schema(type = "string", allowableValues = {"daily", "weekly", "monthly"})
+            ),
+            @Parameter(
+                    name = "category",
+                    description = "조회할 카테고리 이름",
+                    example = "food"
+            ),
+            @Parameter(
+                    name = "page",
+                    description = "페이지 번호",
+                    example = "1"
+            )
     })
     @ApiResponse(
             responseCode = "200",
             description = "카테고리별 지출 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = AccountBookSpendResponse.class)),
+                    schema = @Schema(implementation = AccountBookSpendListResponse.class),
                     examples = @ExampleObject(
                             name = "카테고리 지출 목록 예시",
                             value = """
-            [
-              {
-                "id": 1,
-                "title": "라면",
-                "category": "식비",
-                "amount": 3500,
-                "updatedAt": "2025-04-15T20:30:00",
-                "memo": "야식",
-                "endDate": null,
-                "occurredAt" : "2025-04-17T23:00:00",
-                "repeat": null
-              },
-              {
-                "id": 2,
-                "title": "김밥",
-                "category": "식비",
-                "amount": 4500,
-                "updatedAt": "2025-04-16T12:00:00",
-                "memo": "점심",
-                "endDate": null,
-                "occurredAt" : "2025-04-17T23:00:00",
-                "repeat": {
-                  "frequency": "monthly",
-                  "month": null,
-                  "day": 15
-                }
-              }
-            ]
-            """
+                    {
+                      "accountBookSpendResponseList": [
+                        {
+                          "id": 1,
+                          "title": "라면",
+                          "category": "식비",
+                          "amount": 3500,
+                          "updatedAt": "2025-04-15T20:30:00",
+                          "memo": "야식",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": null
+                        },
+                        {
+                          "id": 2,
+                          "title": "김밥",
+                          "category": "식비",
+                          "amount": 4500,
+                          "updatedAt": "2025-04-16T12:00:00",
+                          "memo": "점심",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": {
+                            "frequency": "monthly",
+                            "month": null,
+                            "day": 15
+                          }
+                        }
+                      ],
+                      "totalPage": 1,
+                      "totalElement": 2,
+                      "number": 0
+                    }
+                    """
                     )
             )
     )
-    ResponseEntity<List<AccountBookSpendResponse>> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category);
+    ResponseEntity<AccountBookSpendListResponse> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category, @RequestParam int page);
 
     @Operation(
             summary = "소비 증감량 조회",

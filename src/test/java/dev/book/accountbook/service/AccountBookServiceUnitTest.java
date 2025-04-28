@@ -1,10 +1,11 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
-import dev.book.accountbook.dto.request.AccountBookListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.request.Repeat;
+import dev.book.accountbook.dto.response.AccountBookIncomeListResponse;
 import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
+import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
@@ -25,6 +26,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -107,15 +112,16 @@ class AccountBookServiceUnitTest {
         UserEntity userEntity = mock(UserEntity.class);
         Category category = new Category("food", "식비");
         AccountBook accountBook = request.toEntity(userEntity, category);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        List<AccountBook> mockList = List.of(accountBook, accountBook);
-        given(accountBookRepository.findAllByTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
+        Page<AccountBook> mockList = new PageImpl<>(List.of(accountBook, accountBook));
+        given(accountBookRepository.findAllByType(anyLong(), any(), pageable)).willReturn(mockList);
 
         // when
-        List<AccountBookSpendResponse> result = accountBookService.getSpendList(userId, new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)));
+        AccountBookSpendListResponse result = accountBookService.getSpendList(userId, 1);
 
         // then
-        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.accountBookSpendResponseList().size()).isEqualTo(2);
     }
 
     @Test
@@ -264,14 +270,15 @@ class AccountBookServiceUnitTest {
         UserEntity userEntity = mock(UserEntity.class);
         Category category = new Category("food", "식비");
         AccountBook accountBook = request.toEntity(userEntity, category);
-        List<AccountBook> mockList = List.of(accountBook, accountBook);
-        given(accountBookRepository.findAllByTypeAndPeriod(anyLong(), any(), any(), any())).willReturn(mockList);
+        Page<AccountBook> mockList = new PageImpl<>(List.of(accountBook, accountBook));
+        Pageable pageable = PageRequest.of(0, 10);
+        given(accountBookRepository.findAllByType(anyLong(), any(), pageable)).willReturn(mockList);
 
         // when
-        List<AccountBookIncomeResponse> result = accountBookService.getIncomeList(userId, new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)));
+        AccountBookIncomeListResponse result = accountBookService.getIncomeList(userId, 1);
 
         // then
-        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.accountBookIncomeResponseList().size()).isEqualTo(2);
     }
 
     @Test

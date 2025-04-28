@@ -1,7 +1,7 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -17,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -72,19 +75,21 @@ class StatServiceUnitTest {
         Frequency frequency = Frequency.WEEKLY;
         Category category = new Category("hobby", "취미");
 
-        List<AccountBook> mockBooks = List.of(
+        Page<AccountBook> mockBooks = new PageImpl<>(List.of(
                 new AccountBook("볼링", CategoryType.SPEND, 15000, null, "memo1", user, null, null, null, category, occurredAt),
                 new AccountBook("영화", CategoryType.SPEND, 12000, null, "memo2", user, null, null, null, category, occurredAt)
-        );
+        ));
+
+        Pageable pageable = mock(Pageable.class);
 
         given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-        given(accountBookRepository.findByCategory(anyLong(), any(), any(), any(LocalDate.class), any(LocalDate.class))).willReturn(mockBooks);
+        given(accountBookRepository.findByCategory(anyLong(), any(), any(), any(LocalDate.class), any(LocalDate.class), pageable)).willReturn(mockBooks);
 
         // when
-        List<AccountBookSpendResponse> result = statService.categoryList(user.getId(), frequency, "hobby");
+        AccountBookSpendListResponse result = statService.categoryList(user.getId(), frequency, "hobby", 1);
 
         // then
-        assertThat(2).isEqualTo(result.size());
+        assertThat(2).isEqualTo(result.accountBookSpendResponseList().size());
     }
 
     @Test

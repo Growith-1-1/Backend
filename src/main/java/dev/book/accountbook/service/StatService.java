@@ -1,6 +1,7 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
+import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
 import dev.book.accountbook.dto.response.AccountBookSpendResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.entity.AccountBook;
@@ -15,6 +16,9 @@ import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,8 @@ import java.util.List;
 public class StatService {
     private final UserRepository userRepository;
     private final AccountBookRepository accountBookRepository;
+
+    private final int PAGE_SIZE = 10;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -41,10 +47,11 @@ public class StatService {
     }
 
     @Transactional
-    public List<AccountBookSpendResponse> categoryList(Long userId, Frequency frequency, String category) {
+    public AccountBookSpendListResponse categoryList(Long userId, Frequency frequency, String category, int page) {
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
-        return getCategoryList(userId, category, frequency.calcStartDate());
+        return getCategoryList(userId, category, frequency.calcStartDate(), pageable);
     }
 
     @Transactional
@@ -59,12 +66,19 @@ public class StatService {
         return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDate.now(), CategoryType.SPEND);
     }
 
-    private List<AccountBookSpendResponse> getCategoryList(Long userId, String category, LocalDate starDate) {
-        List<AccountBook> responses = accountBookRepository.findByCategory(userId, CategoryType.SPEND, category, starDate, LocalDate.now());
+    private AccountBookSpendListResponse getCategoryList(Long userId, String category, LocalDate starDate, Pageable pageable) {
+        Page<AccountBook> responses = accountBookRepository.findByCategory(userId, CategoryType.SPEND, category, starDate, LocalDate.now(), pageable);
 
-        return responses.stream()
+        List<AccountBookSpendResponse> accountBookSpendResponseList = responses.getContent().stream()
                 .map(AccountBookSpendResponse::from)
                 .toList();
+
+        return new AccountBookSpendListResponse(
+                accountBookSpendResponseList,
+                responses.getTotalPages(),
+                responses.getTotalElements(),
+                responses.getNumber() + 1
+        );
     }
 
     private AccountBookConsumeResponse getConsume(UserEntity user, PeriodRange period) {

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/budget")
@@ -17,10 +19,11 @@ public class BudgetController implements BudgetApi {
     private final BudgetService budgetService;
 
     @Override
-    @GetMapping("/{id}")
-    public ResponseEntity<BudgetResponse> getBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
+    @GetMapping
+    public ResponseEntity<BudgetResponse> getBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate date) {
         Long userId = userDetails.user().getId();
-        BudgetResponse response = budgetService.getBudget(id, userId);
+        int month = date.getMonthValue();
+        BudgetResponse response = budgetService.getBudget(userId, month);
 
         return ResponseEntity.ok(response);
     }

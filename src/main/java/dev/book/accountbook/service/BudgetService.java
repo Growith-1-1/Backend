@@ -26,10 +26,9 @@ public class BudgetService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public BudgetResponse getBudget(Long id, Long userId) {
-        int month = getThisMonth();
+    public BudgetResponse getBudget(Long userId, int month) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        Budget budget = budgetRepository.findByIdAndMonthAndUserId(id, month, user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
+        Budget budget = budgetRepository.findByMonthAndUserId(month, user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
 
         return budgetRepository.findBudgetWithTotal(budget.getId());
     }

@@ -166,7 +166,7 @@ public class BudgetServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        BudgetResponse response = budgetService.getBudget(savedBudget.getId(), user.getId());
+        BudgetResponse response = budgetService.getBudget(user.getId(), LocalDate.now().getMonthValue());
 
         // then
         assertThat(response.budget()).isEqualTo(100000);
@@ -181,7 +181,7 @@ public class BudgetServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(savedBudget.getId(), unKnownUser))
+        assertThatThrownBy(() -> budgetService.getBudget(unKnownUser, LocalDate.now().getMonthValue()))
                 .isInstanceOf(UserErrorException.class)
                 .hasMessage("유저를 찾을 수 없습니다.");
     }
@@ -196,7 +196,7 @@ public class BudgetServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(unKnownBudget, user.getId()))
+        assertThatThrownBy(() -> budgetService.getBudget(user.getId(), LocalDate.now().getMonthValue()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 예산입니다.");
     }

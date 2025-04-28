@@ -1,10 +1,14 @@
 package dev.book.accountbook.controller.swagger;
 
-import dev.book.accountbook.dto.request.*;
+import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
+import dev.book.accountbook.dto.request.AccountBookMonthRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.response.*;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -24,46 +28,53 @@ import java.util.List;
 @Tag(name = "가계부 API", description = "지출 / 수입 등록, 수정, 삭제, 조회")
 public interface AccountBookApi {
 
-    @Operation(summary = "지출 목록 조회", description = "유저 ID로 지출을 조회합니다.")
+    @Operation(
+            summary = "지출 목록 조회",
+            description = "유저 ID로 지출을 조회합니다."
+    )
     @ApiResponse(
             responseCode = "200",
             description = "지출 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = AccountBookSpendResponse.class)),
+                    schema = @Schema(implementation = AccountBookSpendListResponse.class),
                     examples = @ExampleObject(
                             name = "지출 목록 예시",
                             value = """
-                                    [
-                                      {
-                                        "id": 1,
-                                        "title": "핫도그",
-                                        "category": "식비",
-                                        "amount": 2500,
-                                        "updatedAt": "2025-04-17T23:59:59",
-                                        "memo": "밤에 배고파서 먹은 야식",
-                                        "endDate": null,
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": null
-                                      },
-                                      {
-                                        "id": 2,
-                                        "title": "아이스 아메리카노",
-                                        "category": "카페 / 간식",
-                                        "amount": 4500,
-                                        "updatedAt": "2025-04-17T20:30:00",
-                                        "memo": "오후 커피",
-                                        "endDate": null,
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": null
-                                      }
-                                    ]
-                                    
-                                    """
+                    {
+                      "accountBookSpendResponseList": [
+                        {
+                          "id": 1,
+                          "title": "핫도그",
+                          "category": "식비",
+                          "amount": 2500,
+                          "updatedAt": "2025-04-17T23:59:59",
+                          "memo": "밤에 배고파서 먹은 야식",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": null
+                        },
+                        {
+                          "id": 2,
+                          "title": "아이스 아메리카노",
+                          "category": "카페 / 간식",
+                          "amount": 4500,
+                          "updatedAt": "2025-04-17T20:30:00",
+                          "memo": "오후 커피",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": null
+                        }
+                      ],
+                      "totalPage": 1,
+                      "totalElement": 2,
+                      "number": 1
+                    }
+                    """
                     )
             )
     )
-    ResponseEntity<List<AccountBookSpendResponse>> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, AccountBookListRequest request);
+    ResponseEntity<AccountBookSpendListResponse> getSpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page);
 
     @Operation(summary = "지출 상제 조회", description = "지출 ID를 이용해 지출을 상제 조회합니다.")
     @Parameter(name = "id", description = "지출 id", example = "1")
@@ -167,43 +178,48 @@ public interface AccountBookApi {
             description = "수입 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = AccountBookIncomeResponse.class)),
+                    schema = @Schema(implementation = AccountBookIncomeListResponse.class),
                     examples = @ExampleObject(
                             name = "수입 목록 예시",
                             value = """
-                                    [
-                                      {
-                                        "id": 1,
-                                        "title": "월급",
-                                        "category": "급여",
-                                        "amount": 3000000,
-                                        "updatedAt": "2025-04-10T23:59:59",
-                                        "memo": "4월 정기 급여",
-                                        "endDate": "2025-12-31T23:59:59",
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": {
-                                          "frequency": "MONTHLY",
-                                          "month": null,
-                                          "day": 10
-                                        }
-                                      },
-                                      {
-                                        "id": 2,
-                                        "title": "이자 수익",
-                                        "category": "저축 / 투자",
-                                        "amount": 15000,
-                                        "updatedAt": "2025-04-10T10:00:00",
-                                        "memo": "적금 이자",
-                                        "endDate": null,
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": null
-                                      }
-                                    ]
-                                    """
+                    {
+                      "accountBookIncomeResponseList": [
+                        {
+                          "id": 1,
+                          "title": "월급",
+                          "category": "급여",
+                          "amount": 3000000,
+                          "updatedAt": "2025-04-10T23:59:59",
+                          "memo": "4월 정기 급여",
+                          "endDate": "2025-12-31T23:59:59",
+                          "occurredAt": "2025-04-17",
+                          "repeat": {
+                            "frequency": "monthly",
+                            "month": null,
+                            "day": 10
+                          }
+                        },
+                        {
+                          "id": 2,
+                          "title": "이자 수익",
+                          "category": "저축 / 투자",
+                          "amount": 15000,
+                          "updatedAt": "2025-04-10T10:00:00",
+                          "memo": "적금 이자",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": null
+                        }
+                      ],
+                      "totalPage": 1,
+                      "totalElement": 2,
+                      "number": 1
+                    }
+                    """
                     )
             )
     )
-    ResponseEntity<List<AccountBookIncomeResponse>> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails, AccountBookListRequest request);
+    ResponseEntity<AccountBookIncomeListResponse> getIncomeList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam int page);
 
     @Parameter(name = "id", description = "수입 ID", example = "1")
     @Operation(summary = "수입 상세 조회", description = "수입 ID를 이용해 수입 상세 정보를 조회합니다.")
@@ -304,50 +320,69 @@ public interface AccountBookApi {
     @Operation(summary = "수입 삭제", description = "수입 정보를 삭제합니다.")
     ResponseEntity<Boolean> deleteIncome(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id);
 
-    @Parameter(name = "category", description = "카테고리 이름", example = "food")
-    @Operation(summary = "카테고리별 지출 조회", description = "카테고리 이름을 이용해 지출 목록을 조회합니다.")
+    @Operation(
+            summary = "카테고리별 지출 조회",
+            description = "카테고리 이름을 이용해 지출 목록을 조회합니다."
+    )
+    @Parameters({
+            @Parameter(
+                    name = "category",
+                    description = "카테고리 이름",
+                    example = "food"
+            ),
+            @Parameter(
+                    name = "page",
+                    description = "페이지 번호 (0부터 시작)",
+                    example = "0"
+            )
+    })
     @ApiResponse(
             responseCode = "200",
             description = "카테고리 기준 지출 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = AccountBookSpendResponse.class)),
+                    schema = @Schema(implementation = AccountBookSpendListResponse.class),
                     examples = @ExampleObject(
                             name = "지출 목록 예시",
                             value = """
-                                    [
-                                      {
-                                        "id": 1,
-                                        "title": "핫도그",
-                                        "category": "음식",
-                                        "amount": 2500,
-                                        "updatedAt": "2025-04-17T23:59:59",
-                                        "memo": "밤에 배고파서 먹은 야식",
-                                        "endDate": "2025-12-31T23:59:59",
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": {
-                                          "frequency": "yearly",
-                                          "month": 4,
-                                          "day": 17
-                                        }
-                                      },
-                                      {
-                                        "id": 2,
-                                        "title": "치킨",
-                                        "category": "음식",
-                                        "amount": 4500,
-                                        "updatedAt": "2025-04-17T20:30:00",
-                                        "memo": "야식은 역시 치킨",
-                                        "endDate": null,
-                                        "occurredAt" : "2025-04-17",
-                                        "repeat": null
-                                      }
-                                    ]
-                                    """
+                    {
+                      "accountBookSpendResponseList": [
+                        {
+                          "id": 1,
+                          "title": "핫도그",
+                          "category": "식비",
+                          "amount": 2500,
+                          "updatedAt": "2025-04-17T23:59:59",
+                          "memo": "밤에 배고파서 먹은 야식",
+                          "endDate": "2025-12-31T23:59:59",
+                          "occurredAt": "2025-04-17",
+                          "repeat": {
+                            "frequency": "yearly",
+                            "month": 4,
+                            "day": 17
+                          }
+                        },
+                        {
+                          "id": 2,
+                          "title": "치킨",
+                          "category": "식비",
+                          "amount": 4500,
+                          "updatedAt": "2025-04-17T20:30:00",
+                          "memo": "야식은 역시 치킨",
+                          "endDate": null,
+                          "occurredAt": "2025-04-17",
+                          "repeat": null
+                        }
+                      ],
+                      "totalPage": 1,
+                      "totalElement": 2,
+                      "number": 1
+                    }
+                    """
                     )
             )
     )
-    ResponseEntity<List<AccountBookSpendResponse>> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable String category);
+    ResponseEntity<AccountBookSpendListResponse> getCategorySpendList(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String category, @RequestParam int page);
 
     @Operation(
             summary = "지출 목록 생성",
@@ -389,40 +424,66 @@ public interface AccountBookApi {
             summary = "지정 기간 가계부 조회",
             description = "사용자가 요청한 기간 동안의 수입 및 지출 내역을 반환합니다."
     )
+    @Parameters({
+            @Parameter(
+                    name = "startDate",
+                    description = "조회 시작 날짜 (yyyy-MM-dd 형식)",
+                    example = "2025-04-01"
+            ),
+            @Parameter(
+                    name = "endDate",
+                    description = "조회 종료 날짜 (yyyy-MM-dd 형식)",
+                    example = "2025-04-30"
+            ),
+            @Parameter(
+                    name = "page",
+                    description = "조회할 페이지 번호",
+                    example = "1"
+            )
+    })
     @ApiResponse(
             responseCode = "200",
             description = "기간별 가계부 내역 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = AccountBookPeriodResponse.class)),
+                    schema = @Schema(implementation = AccountBookPeriodListResponse.class),
                     examples = @ExampleObject(
                             name = "기간별 가계부 응답 예시",
                             value = """
-                                    [
-                                      {
-                                        "id": 1,
-                                        "title": "월급",
-                                        "type": "INCOME",
-                                        "category": "급여",
-                                        "amount": 3000000,
-                                        "memo": "4월 급여",
-                                        "occurredAt": "2025-04-10"
-                                      },
-                                      {
-                                        "id": 2,
-                                        "title": "편의점",
-                                        "type": "SPEND",
-                                        "category": "편의점 / 마트 / 잡화",
-                                        "amount": 4500,
-                                        "memo": "컵라면",
-                                        "occurredAt": "2025-04-11"
-                                      }
-                                    ]
-                                    """
+                    {
+                      "accountBookPeriodResponse": [
+                        {
+                          "id": 1,
+                          "title": "월급",
+                          "type": "INCOME",
+                          "category": "급여",
+                          "amount": 3000000,
+                          "memo": "4월 급여",
+                          "endDate": null,
+                          "occurredAt": "2025-04-10",
+                          "repeat": null
+                        },
+                        {
+                          "id": 2,
+                          "title": "편의점",
+                          "type": "SPEND",
+                          "category": "편의점 / 마트 / 잡화",
+                          "amount": 4500,
+                          "memo": "컵라면",
+                          "endDate": null,
+                          "occurredAt": "2025-04-11",
+                          "repeat": null
+                        }
+                      ],
+                      "totalPage": 1,
+                      "totalElement": 2,
+                      "number": 1
+                    }
+                    """
                     )
             )
     )
-    ResponseEntity<List<AccountBookPeriodResponse>> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate);
+    ResponseEntity<AccountBookPeriodListResponse> getAccountBookPeriod(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate,  @RequestParam int page);
 
     @Operation(
             summary = "지정 월 가계부 조회",
@@ -500,39 +561,39 @@ public interface AccountBookApi {
     ResponseEntity<List<AccountBookMonthResponse>> getMonthAccountBook(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody AccountBookMonthRequest request);
 
     @Operation(
-            summary = "임시 지출 목록 조회",
-            description = "임시 지출 목록을 조회합니다.."
+            summary = "임시 가계부 목록 조회",
+            description = "임시 가계부 목록을 조회합니다."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "임시 지출 목록 조회 성공",
+            description = "임시 가계부 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
                     array = @ArraySchema(schema = @Schema(implementation = TempAccountBookResponse.class)),
                     examples = @ExampleObject(
-                            name = "임시 지출 생성 응답 예시",
+                            name = "임시 가계부 생성 응답 예시",
                             value = """
-                    [
-                      {
-                        "id": 1,
-                        "title": "편의점",
-                        "memo": "야식으로 컵라면",
-                        "amount": 4500,
-                        "type": "SPEND",
-                        "occurredAt": "2025-04-27",
-                        "userId": 5
-                      },
-                      {
-                        "id": 2,
-                        "title": "급여",
-                        "memo": "4월 월급",
-                        "amount": 3000000,
-                        "type": "INCOME",
-                        "occurredAt": "2025-04-25",
-                        "userId": 5
-                      }
-                    ]
-                    """
+                                    [
+                                      {
+                                        "id": 1,
+                                        "title": "편의점",
+                                        "memo": "야식으로 컵라면",
+                                        "amount": 4500,
+                                        "type": "SPEND",
+                                        "occurredAt": "2025-04-27",
+                                        "userId": 5
+                                      },
+                                      {
+                                        "id": 2,
+                                        "title": "급여",
+                                        "memo": "4월 월급",
+                                        "amount": 3000000,
+                                        "type": "INCOME",
+                                        "occurredAt": "2025-04-25",
+                                        "userId": 5
+                                      }
+                                    ]
+                                    """
                     )
             )
     )
