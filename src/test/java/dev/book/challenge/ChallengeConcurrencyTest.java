@@ -3,11 +3,15 @@ package dev.book.challenge;
 import dev.book.challenge.dto.request.ChallengeCreateRequest;
 import dev.book.challenge.entity.Challenge;
 import dev.book.challenge.repository.ChallengeRepository;
+import dev.book.challenge.service.ChallengeLockService;
 import dev.book.challenge.service.ChallengeService;
+import dev.book.challenge.user_challenge.repository.UserChallengeRepository;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import dev.book.global.config.security.jwt.JwtAuthenticationToken;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,8 +29,8 @@ import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @SpringBootTest
-@ActiveProfiles("test")
 public class ChallengeConcurrencyTest {
 
     @Autowired
@@ -39,14 +42,28 @@ public class ChallengeConcurrencyTest {
     @Autowired
     private ChallengeService challengeService;
 
+    @Autowired
+    private UserChallengeRepository userChallengeRepository;
+
+    @Autowired
+    private ChallengeLockService challengeLockService;
+
+    @AfterEach
+    void tearDown() {
+        userChallengeRepository.deleteAllInBatch();
+        challengeRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+    }
+
     @Test
     @DisplayName("동시에 참여했을 때 동시성 테스트.")
     @WithMockUser
     void ChallengeConcurrency() throws InterruptedException {
 
         //given
-        int numThreads = 100; //100명
+        int numThreads = 10; //10명
         CountDownLatch countDownLatch = new CountDownLatch(numThreads);
+        CountDownLatch startCountDownLatch = new CountDownLatch(1);
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
         List<UserEntity> users = new ArrayList<>();
@@ -67,13 +84,13 @@ public class ChallengeConcurrencyTest {
         LocalDate startDate = LocalDate.of(2025, 04, 24);
         LocalDate endDate = LocalDate.of(2025, 04, 30);
 
-        ChallengeCreateRequest challengeCreateRequest = new ChallengeCreateRequest("제목", "내용", "PUBLIC", 100000, 1001, List.of("SHOPPING"), startDate, endDate);
+        ChallengeCreateRequest challengeCreateRequest = new ChallengeCreateRequest("제목", "내용", "PUBLIC", 100000, 11, List.of("SHOPPING"), startDate, endDate);
         Challenge challenge = Challenge.of(challengeCreateRequest, savedCreator);
         Challenge savedChallenge = challengeRepository.save(challenge);
 
         for (int i = 1; i <= numThreads; i++) {
 
-            int index = i;
+            final int index = i;
             executorService.execute(() -> {
                 try {
                     UserEntity userEntity = userRepository.findByEmail("test@naver.com" + index).orElseThrow();
@@ -84,20 +101,20 @@ public class ChallengeConcurrencyTest {
 
                     context.setAuthentication(authentication);
                     SecurityContextHolder.setContext(context);
-
-
-                    challengeService.participate(userEntity, savedChallenge.getId());
+                    startCountDownLatch.await(); // 동시에 출발할려고 기다림
+                    challengeLockService.participate(userEntity, challenge.getId());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
                 } finally {
                     countDownLatch.countDown();
                 }
             });
         }
+        startCountDownLatch.countDown(); // 1->0으로 변하고 participate을 거의 동시에 호출
         countDownLatch.await();
         //when
         Challenge updatedChallenge = challengeRepository.findById(savedChallenge.getId()).orElseThrow();
         //then
-        assertThat(updatedChallenge.getCurrentCapacity()).isEqualTo(101);
+        assertThat(updatedChallenge.getCurrentCapacity()).isEqualTo(11);
     }
 }

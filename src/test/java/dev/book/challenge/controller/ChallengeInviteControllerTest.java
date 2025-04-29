@@ -40,6 +40,7 @@ class ChallengeInviteControllerTest {
     private ObjectMapper objectMapper;
 
     private Long challengeId = 1L;
+    
     private UserEntity user;
 
 

@@ -25,7 +25,7 @@ public class RankService {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public void checkRank(Long challengeId) {
-
+        // 카테고리를 조인해서 챌린지아이디로 조회 하고 그 챌린지의 속한 유저 아이디를 불러온다.
         Challenge challenge = challengeRepository.findByIdJoinCategory(challengeId).orElseThrow(() -> new ChallengeException(ErrorCode.CHALLENGE_NOT_FOUND));
         List<Long> participantIds = userChallengeRepository.findUserIdByChallengeId(challengeId);
         List<ChallengeCategory> challengeCategories = challenge.getChallengeCategories();

@@ -12,6 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     private final JwtWebsocketInterceptor jwtWebsocketInterceptor;
 
     @Override
@@ -26,6 +27,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .addInterceptors(jwtWebsocketInterceptor)
                 .setAllowedOriginPatterns("*").withSockJS();
     }
-
-
 }

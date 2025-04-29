@@ -17,6 +17,7 @@ spring:
         - "/api/v1/auth/reissue"
         - "/signup"
         - "/login"
+        - "/actuator/prometheus"
 
 
   aes:

@@ -14,15 +14,11 @@ import java.util.Optional;
 @Repository
 public interface UserChallengeRepository extends JpaRepository<UserChallenge, Long> {
 
-    @Query("SELECT COUNT(u) FROM UserChallenge u WHERE u.challenge.id=:id")
-    int countByChallengeId(Long id);
-
     boolean existsByUserIdAndChallengeId(Long id, Long challengeId);
 
     Optional<UserChallenge> findByUserIdAndChallengeId(Long id, Long challengeId);
 
     void deleteByUserIdAndChallengeId(Long userId, Long challengeId);
-
 
     @Query("SELECT uc.user.id FROM UserChallenge uc WHERE uc.challenge.id=:challengeId")
     List<Long> findUserIdByChallengeId(Long challengeId);
@@ -37,7 +33,6 @@ public interface UserChallengeRepository extends JpaRepository<UserChallenge, Lo
                   AND :spendDate BETWEEN c.startDate AND c.endDate
             """)
     List<Challenge> findChallengesByUserAndDate(Long userId, Long categoryId, LocalDate spendDate);
-
 
     @Query("SELECT uc FROM UserChallenge uc JOIN UserEntity u ON uc.user.id=u.id JOIN Challenge c ON uc.challenge.id=c.id WHERE uc.challenge.id=:challengeId")
     List<UserChallenge> findUsersByChallengeId(Long challengeId);

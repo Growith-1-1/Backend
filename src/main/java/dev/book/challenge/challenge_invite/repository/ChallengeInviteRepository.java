@@ -13,8 +13,9 @@ public interface ChallengeInviteRepository extends JpaRepository<ChallengeInvite
 
     boolean existsByInviteUserIdAndChallengeId(Long inviteUserId, Long challengeId);
 
+    @Query("SELECT c FROM ChallengeInvite c JOIN FETCH c.challenge JOIN FETCH c.requestUser JOIN FETCH  c.inviteUser WHERE c.inviteUser.id=:id")
     List<ChallengeInvite> findAllByInviteUserId(Long id);
 
-    @Query("SELECT c FROM ChallengeInvite c JOIN FETCH c.challenge WHERE c.id=:inviteId AND c.inviteUser.id=:inviteUserId")
+    @Query("SELECT c FROM ChallengeInvite c JOIN FETCH c.challenge JOIN FETCH c.requestUser JOIN FETCH  c.inviteUser WHERE c.id=:inviteId AND c.inviteUser.id=:inviteUserId")
     Optional<ChallengeInvite> findByIdAndInviteUserId(Long inviteId, Long inviteUserId);
 }

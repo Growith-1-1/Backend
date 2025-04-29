@@ -53,7 +53,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long>, Cha
             """)
     List<ChallengeReadResponse> findNewChallenge(Pageable pageable, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT c FROM Challenge c WHERE c.id = :id")
     Optional<Challenge> findByIdWithLock(Long id);
 

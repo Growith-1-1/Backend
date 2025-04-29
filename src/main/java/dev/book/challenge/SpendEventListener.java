@@ -13,7 +13,6 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -26,7 +25,6 @@ public class SpendEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSpendCreatedEvent(SpendCreatedRankingEvent event) {
-
         AccountBook accountBook = event.accountBook();
         Long userId = accountBook.getUser().getId();
         LocalDate spendDate = accountBook.getOccurredAt();

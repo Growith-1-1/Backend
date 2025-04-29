@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.book.challenge.dto.request.ChallengeCreateRequest;
 import dev.book.challenge.dto.request.ChallengeUpdateRequest;
 import dev.book.challenge.dto.response.*;
+import dev.book.challenge.service.ChallengeLockService;
 import dev.book.challenge.service.ChallengeService;
 import dev.book.challenge.type.Release;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -46,14 +47,18 @@ class ChallengeControllerTest {
     @MockitoBean
     private ChallengeService challengeService;
 
+    @MockitoBean
+    private ChallengeLockService challengeLockService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     private Long challengeId = 1L;
-    UserEntity creator;
+
+    private UserEntity creator;
 
     @BeforeEach
-    void setUP() {
+    void setUp() {
         creator = UserEntity.builder()
                 .name("작성자")
                 .email("이메일")
@@ -103,12 +108,10 @@ class ChallengeControllerTest {
     void searchChallenge() throws Exception {
         // given
         ChallengeReadResponse response1 = new ChallengeReadResponse(
-                1L, "제목", 10, 1, RECRUITING
-        );
+                1L, "제목", 10, 1, RECRUITING);
 
         ChallengeReadResponse response2 = new ChallengeReadResponse(
-                2L, "제목", 5, 1, RECRUITING
-        );
+                2L, "제목", 5, 1, RECRUITING);
 
         List<ChallengeReadResponse> list = List.of(response1, response2);
         Page<ChallengeReadResponse> pageResponse = new PageImpl<>(list);
@@ -142,8 +145,7 @@ class ChallengeControllerTest {
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2024, 2, 1),
                 LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         given(challengeService.searchChallengeById(any())).willReturn(response);
 
@@ -162,8 +164,7 @@ class ChallengeControllerTest {
         // given
         ChallengeUpdateRequest request = new ChallengeUpdateRequest(
                 "수정된 제목", "수정된 내용", "PUBLIC", 2000, 20, List.of("SHOPPING"),
-                LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1)
-        );
+                LocalDate.of(2024, 2, 1), LocalDate.of(2024, 3, 1));
 
         ChallengeUpdateResponse response = new ChallengeUpdateResponse(1L, "수정된 제목", "수정된 내용", Release.PUBLIC, 2000,
                 20,
@@ -172,8 +173,7 @@ class ChallengeControllerTest {
                 LocalDate.of(2024, 5, 1),
                 LocalDate.of(2024, 5, 31),
                 LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         given(challengeService.updateChallenge(any(), any(), any())).willReturn(response);
 
@@ -225,7 +225,6 @@ class ChallengeControllerTest {
                 .andExpect(jsonPath("$[0].capacity").value(5))
                 .andExpect(jsonPath("$[0].participants").value(40))
                 .andExpect(jsonPath("$[0].status").value("RECRUITING"));
-
     }
 
     @Test
@@ -235,7 +234,7 @@ class ChallengeControllerTest {
         // given
         ChallengeReadResponse response = new ChallengeReadResponse(1L, "제목", 5, 40, RECRUITING);
 
-        given(challengeService.findNewChallenge(anyInt(),anyInt())).willReturn(List.of(response));
+        given(challengeService.findNewChallenge(anyInt(), anyInt())).willReturn(List.of(response));
         mockMvc.perform(get("/api/v1/challenges/new"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -243,7 +242,6 @@ class ChallengeControllerTest {
                 .andExpect(jsonPath("$[0].capacity").value(5))
                 .andExpect(jsonPath("$[0].participants").value(40))
                 .andExpect(jsonPath("$[0].status").value("RECRUITING"));
-
     }
 
     @Test

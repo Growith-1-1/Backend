@@ -4,6 +4,7 @@ import dev.book.challenge.controller.swagger.ChallengeApi;
 import dev.book.challenge.dto.request.ChallengeCreateRequest;
 import dev.book.challenge.dto.request.ChallengeUpdateRequest;
 import dev.book.challenge.dto.response.*;
+import dev.book.challenge.service.ChallengeLockService;
 import dev.book.challenge.service.ChallengeService;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import java.util.List;
 public class ChallengeController implements ChallengeApi {
 
     private final ChallengeService challengeService;
+    private final ChallengeLockService challengeLockService;
 
     @PostMapping
     public ResponseEntity<ChallengeCreateResponse> createChallenge(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody ChallengeCreateRequest challengeCreateRequest) {
@@ -58,7 +60,7 @@ public class ChallengeController implements ChallengeApi {
 
     @PostMapping("/{id}/participation")
     public ResponseEntity<String> participate(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id) {
-        challengeService.participate(userDetails.user(), id);
+        challengeLockService.participate(userDetails.user(), id);
         return ResponseEntity.ok().body("참여가 완료 되었습니다");
 
     }
@@ -77,10 +79,9 @@ public class ChallengeController implements ChallengeApi {
 
     @GetMapping("/new")
     public ResponseEntity<List<ChallengeReadResponse>> searchNewChallenge(
-             @RequestParam(required = false, defaultValue = "1") int page
-            , @RequestParam(required = false, defaultValue = "10") int size
-    ) {
-        List<ChallengeReadResponse> challengeReadResponses = challengeService.findNewChallenge(page,size);
+            @RequestParam(required = false, defaultValue = "1") int page
+            , @RequestParam(required = false, defaultValue = "10") int size) {
+        List<ChallengeReadResponse> challengeReadResponses = challengeService.findNewChallenge(page, size);
         return ResponseEntity.ok().body(challengeReadResponses);
     }
 

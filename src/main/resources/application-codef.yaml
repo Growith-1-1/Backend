@@ -3,3 +3,4 @@ codef:
   client_secret : "${CODEF_CLIENT_SECRET}"
   access_token : "${CODEF_ACCESS_TOKEN}"
   public_key : "${CODEF_PUBLIC_KEY}"
+  account_key : "${CODEF_ACCOUNT_KEY}"

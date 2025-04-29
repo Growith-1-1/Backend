@@ -52,6 +52,9 @@ public class Challenge extends BaseTimeEntity {
     @ColumnDefault(value = "1")
     private Integer currentCapacity;
 
+    @Version
+    private Long version;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 
@@ -81,11 +84,10 @@ public class Challenge extends BaseTimeEntity {
 
 
     public static Challenge of(ChallengeCreateRequest challengeCreateRequest, UserEntity creator) {
-        Challenge challenge = new Challenge(challengeCreateRequest.title(), challengeCreateRequest.text(),
+        return new Challenge(challengeCreateRequest.title(), challengeCreateRequest.text(),
                 challengeCreateRequest.release(),
                 challengeCreateRequest.amount(), challengeCreateRequest.capacity(),
                 challengeCreateRequest.startDate(), challengeCreateRequest.endDate(), creator);
-        return challenge;
 
     }
 
@@ -135,11 +137,14 @@ public class Challenge extends BaseTimeEntity {
     }
 
     public void plusCurrentCapacity() {
+        if (this.currentCapacity >= this.capacity) {
+            throw new ChallengeException(CHALLENGE_CAPACITY_FULL);
+        }
         this.currentCapacity++;
     }
 
     public void minusCurrentCapacity() {
-        this.currentCapacity++;
+        this.currentCapacity--;
     }
 
     public void startChallenge() {

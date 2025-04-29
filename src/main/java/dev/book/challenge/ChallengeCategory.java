@@ -34,6 +34,5 @@ public class ChallengeCategory {
 
     public static List<Category> getCategoryList(List<ChallengeCategory> challengeCategories) {
         return challengeCategories.stream().map(ChallengeCategory::getCategory).toList();
-
     }
 }

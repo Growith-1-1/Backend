@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ChallengeInviteServiceTest {
+
     @InjectMocks
     private ChallengeInviteService challengeInviteService;
     @Mock
@@ -95,8 +96,5 @@ class ChallengeInviteServiceTest {
         //then
         assertThatThrownBy(() -> challengeInviteService.invite(1L, requestUser, challengeInviteRequest)).isInstanceOf(ChallengeException.class)
                 .hasMessage("초대할 권한이 없습니다.");
-
-
     }
-    // todo 테스트 추가
 }

@@ -1,7 +1,6 @@
 package dev.book.challenge.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import dev.book.global.entity.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

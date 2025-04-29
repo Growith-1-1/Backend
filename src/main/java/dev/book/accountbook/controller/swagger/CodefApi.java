@@ -1,7 +1,7 @@
 package dev.book.accountbook.controller.swagger;
 
 import dev.book.accountbook.dto.request.CreateConnectedIdRequest;
-import dev.book.accountbook.entity.TempAccountBook;
+import dev.book.accountbook.dto.response.TempAccountBookResponse;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,5 +36,5 @@ public interface CodefApi {
             description = "이 API는 내부 테스트용입니다. 호출하지 마세요."
     )
     @ApiResponse(description = "호출 금지")
-    ResponseEntity<List<TempAccountBook>> trans(@AuthenticationPrincipal CustomUserDetails userDetails);
+    ResponseEntity<List<TempAccountBookResponse>> trans(@AuthenticationPrincipal CustomUserDetails userDetails);
 }
