@@ -46,7 +46,7 @@ public class AccountBookService {
 
     private final ApplicationEventPublisher publisher;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookSpendResponse getSpendOne(Long id, Long userId) {
         isExistsUser(userId);
         AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
@@ -54,7 +54,7 @@ public class AccountBookService {
         return AccountBookSpendResponse.from(accountBook);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookSpendListResponse getSpendList(Long userId, int page) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.SPEND, pageable);
@@ -101,14 +101,14 @@ public class AccountBookService {
         return true;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookIncomeResponse getIncomeOne(Long id, Long userId) {
         AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
 
         return AccountBookIncomeResponse.from(accountBook);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookIncomeListResponse getIncomeList(Long userId, int page) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.INCOME, pageable);
@@ -172,17 +172,18 @@ public class AccountBookService {
         );
     }
 
+    @Transactional
     public List<AccountBookSpendResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
-        List<AccountBook> accountBookList = accountBookList(user, requestList);
+        List<AccountBook> accountBookList = createAccountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
-        accountBookRepository.deleteAllByUser(user);
+        tempAccountBookRepository.deleteAllByUser(user);
 
         return savedAccountBookList.stream()
                 .map(AccountBookSpendResponse::from)
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookPeriodListResponse getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate, int page) {
         isExistsUser(userId);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
@@ -200,6 +201,7 @@ public class AccountBookService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<AccountBookMonthResponse> getMonthAccountBook(Long userId, AccountBookMonthRequest request) {
         isExistsUser(userId);
 
@@ -208,7 +210,7 @@ public class AccountBookService {
 
         List<AccountBook> findList = accountBookRepository.findAllMonth(userId, startDate, endDate);
 
-        return accountBookList(findList, startDate, endDate);
+        return monthAccountBookList(findList, startDate, endDate);
     }
 
     private void isExistsUser(Long userId) {
@@ -248,7 +250,7 @@ public class AccountBookService {
                 .orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_CATEGORY));
     }
 
-    private List<AccountBook> accountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
+    private List<AccountBook> createAccountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
 
         return requestList.accountBookSpendRequestList().stream()
                 .map(request -> {
@@ -259,7 +261,7 @@ public class AccountBookService {
                 .toList();
     }
 
-    private List<AccountBookMonthResponse> accountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
+    private List<AccountBookMonthResponse> monthAccountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
         List<AccountBookMonthResponse> responseList = new ArrayList<>();
         Map<LocalDate, List<AccountBook>> accountBookMap = groupAccountBooksByDate(findList);
 
@@ -348,7 +350,7 @@ public class AccountBookService {
         return "발송된 메시지가 없습니다.";
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<TempAccountBookResponse> getTempList(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
