@@ -23,3 +23,23 @@ spring:
 
 firebase:
   url: "${firebase_url}"
+
+management:
+  server:
+    port: "${management_server_port}"
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true

@@ -1,6 +1,7 @@
 package dev.book.accountbook.entity;
 
 import dev.book.accountbook.type.CategoryType;
+import dev.book.global.entity.BaseTimeEntity;
 import dev.book.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class TempAccountBook {
+public class TempAccountBook extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

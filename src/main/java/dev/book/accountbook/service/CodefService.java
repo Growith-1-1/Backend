@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.accountbook.dto.request.CreateConnectedIdRequest;
+import dev.book.accountbook.dto.response.TempAccountBookResponse;
 import dev.book.accountbook.entity.Codef;
 import dev.book.accountbook.entity.TempAccountBook;
 import dev.book.accountbook.exception.codef.CodefErrorCode;
@@ -12,16 +13,19 @@ import dev.book.accountbook.exception.codef.CodefErrorException;
 import dev.book.accountbook.repository.CodefRepository;
 import dev.book.accountbook.repository.TempAccountBookRepository;
 import dev.book.accountbook.type.CategoryType;
+import dev.book.global.util.AccountAESUtil;
 import dev.book.global.util.RsaEncryptUtil;
 import dev.book.user.entity.UserEntity;
 import dev.book.user.exception.UserErrorCode;
 import dev.book.user.exception.UserErrorException;
+import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLDecoder;
@@ -48,9 +52,11 @@ public class CodefService {
     private final String createConnectedId = "https://development.codef.io/v1/account/create";
     private final String transactions = "https://development.codef.io/v1/kr/bank/p/account/transaction-list";
 
+    private final UserRepository userRepository;
     private final CodefRepository codefRepository;
     private final TempAccountBookRepository tempAccountBookRepository;
 
+    private final AccountAESUtil aesUtil;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final RsaEncryptUtil rsaEncryptUtil;
@@ -74,6 +80,7 @@ public class CodefService {
         }
     }
 
+    @Transactional
     public boolean createConnectedId(UserEntity user, CreateConnectedIdRequest createRequest) {
         HttpEntity<Map<String, Object>> request = createConnectRequest(createRequest);
         ResponseEntity<String> response = restTemplate.postForEntity(createConnectedId, request, String.class);
@@ -89,8 +96,8 @@ public class CodefService {
         }
 
         validationCode(code);
-        codefRepository.save(createRequest.toEntity(user, createRequest.bank().getCode(), createRequest.accountNumber(), connectedId));
-        List<TempAccountBook> savedList = tempAccountBookRepository.saveAll(getTransactions(user));
+        codefRepository.save(createRequest.toEntity(user, createRequest.bank().getCode(), aesUtil.encrypt(createRequest.accountNumber()), connectedId));
+        List<TempAccountBookResponse> savedList = getTransactions(user);
 
         if (!savedList.isEmpty()) {
             publisher.publishEvent(new CreateTransEvent(user));
@@ -99,12 +106,18 @@ public class CodefService {
         return true;
     }
 
-    public List<TempAccountBook> getTransactions(UserEntity user) {
+    @Transactional
+    public List<TempAccountBookResponse> getTransactions(UserEntity user) {
         HttpEntity<Map<String, Object>> request = createTransRequest(user);
         ResponseEntity<String> response = restTemplate.postForEntity(transactions, request, String.class);
         String decodeResponse = URLDecoder.decode(response.getBody(), StandardCharsets.UTF_8);
+        UserEntity userEntity = userRepository.findById(user.getId()).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+        List<TempAccountBook> tempAccountBookList = tempAccountBookRepository.saveAll(mapToAccountBooks(decodeResponse, userEntity));
 
-        return mapToAccountBooks(decodeResponse, user);
+
+        return tempAccountBookList.stream()
+                .map(TempAccountBookResponse::from)
+                .toList();
     }
 
     private HttpEntity<String> getTokenRequest() {
@@ -152,7 +165,7 @@ public class CodefService {
         Map<String, Object> body = new HashMap<>();
         body.put("organization", codef.getBankCode());
         body.put("connectedId", codef.getConnectedId());
-        body.put("account", codef.getAccount());
+        body.put("account", aesUtil.decrypt(codef.getAccount()));
         body.put("orderBy", "0");
 
         if (user.getCreatedAt().toLocalDate().isEqual(LocalDate.now())) {

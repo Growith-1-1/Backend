@@ -2,9 +2,9 @@ package dev.book.accountbook.scheduler;
 
 import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.accountbook.dto.response.AccountBookWeekConsumePerUserResponse;
+import dev.book.accountbook.dto.response.TempAccountBookResponse;
 import dev.book.accountbook.entity.Budget;
 import dev.book.accountbook.entity.Codef;
-import dev.book.accountbook.entity.TempAccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
 import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.repository.CodefRepository;
@@ -13,10 +13,10 @@ import dev.book.accountbook.service.CodefService;
 import dev.book.accountbook.service.StatService;
 import dev.book.accountbook.type.Frequency;
 import dev.book.accountbook.type.PeriodRange;
-import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.achievement.achievement_user.dto.event.SaveConsumeFromBudgetEvent;
 import dev.book.achievement.achievement_user.dto.event.SaveConsumeOfWeekEvent;
 import dev.book.achievement.achievement_user.dto.event.SuccessBudgetPlanEvent;
+import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -81,9 +81,9 @@ public class AccountBookScheduler {
         List<Codef> codefList = codefRepository.findAllCodefWithUserCreatedBeforeToday();
 
         for (Codef codef : codefList) {
-            List<TempAccountBook> savedList = tempAccountBookRepository.saveAll(codefService.getTransactions(codef.getUser()));
+            List<TempAccountBookResponse> responseList = codefService.getTransactions(codef.getUser());
 
-            if (!savedList.isEmpty()) {
+            if (!responseList.isEmpty()) {
                 eventPublisher.publishEvent(new CreateTransEvent(codef.getUser()));
             }
         }
