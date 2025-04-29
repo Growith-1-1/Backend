@@ -1,5 +1,7 @@
 package dev.book.global.util;
 
+import dev.book.global.exception.util.AESErrorCode;
+import dev.book.global.exception.util.AESErrorException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +40,7 @@ public class AccountAESUtil {
 
             return Base64.getEncoder().encodeToString(encryptedWithIv);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AESErrorException(AESErrorCode.FAIL_ENCRYPT, e.getMessage());
         }
     }
 
@@ -63,7 +65,7 @@ public class AccountAESUtil {
 
             return new String(decrypted);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AESErrorException(AESErrorCode.FAIL_DECRYPT, e.getMessage());
         }
     }
 }
