@@ -1,7 +1,7 @@
 package dev.book.accountbook.controller.swagger;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.type.Frequency;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -86,7 +86,7 @@ public interface StatApi {
             description = "카테고리별 지출 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = AccountBookSpendListResponse.class),
+                    schema = @Schema(implementation = AccountBookListResponse.class),
                     examples = @ExampleObject(
                             name = "카테고리 지출 목록 예시",
                             value = """
@@ -127,7 +127,7 @@ public interface StatApi {
                     )
             )
     )
-    ResponseEntity<AccountBookSpendListResponse> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category, @RequestParam int page);
+    ResponseEntity<AccountBookListResponse> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category, @RequestParam int page);
 
     @Operation(
             summary = "소비 증감량 조회",
