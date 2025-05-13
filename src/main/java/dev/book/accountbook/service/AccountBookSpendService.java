@@ -48,7 +48,7 @@ public class AccountBookSpendService {
 
     private final ApplicationEventPublisher publisher;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookResponse getSpendOne(Long id, Long userId) {
         isExistsUser(userId);
         AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
@@ -56,7 +56,7 @@ public class AccountBookSpendService {
         return AccountBookResponse.from(accountBook);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookListResponse getSpendList(Long userId, int page) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         Page<AccountBook> accountBooks = accountBookRepository.findByAccountBookWithPage(userId, CategoryType.SPEND, pageable);
@@ -103,7 +103,7 @@ public class AccountBookSpendService {
         return true;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookListResponse getCategorySpendList(String category, Long userId, int page) {
         Category findCategory = getCategory(category);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
@@ -121,6 +121,7 @@ public class AccountBookSpendService {
         );
     }
 
+    @Transactional
     public List<AccountBookResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
         List<AccountBook> accountBookList = accountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
@@ -131,7 +132,7 @@ public class AccountBookSpendService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AccountBookPeriodListResponse getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate, int page) {
         isExistsUser(userId);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
@@ -149,6 +150,7 @@ public class AccountBookSpendService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<AccountBookMonthResponse> getMonthAccountBook(Long userId, AccountBookMonthRequest request) {
         isExistsUser(userId);
 
@@ -297,7 +299,7 @@ public class AccountBookSpendService {
         return "발송된 메시지가 없습니다.";
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<TempAccountBookResponse> getTempList(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
