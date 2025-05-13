@@ -1,6 +1,9 @@
 package dev.book.accountbook.service;
 
-import dev.book.accountbook.dto.request.*;
+import dev.book.accountbook.dto.request.AccountBookMonthRequest;
+import dev.book.accountbook.dto.request.AccountBookRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendListRequest;
+import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.response.*;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.entity.Budget;
@@ -11,7 +14,6 @@ import dev.book.accountbook.repository.BudgetRepository;
 import dev.book.accountbook.repository.TempAccountBookRepository;
 import dev.book.accountbook.type.BudgetLimit;
 import dev.book.accountbook.type.CategoryType;
-import dev.book.achievement.achievement_user.dto.event.CreateFirstIncomeEvent;
 import dev.book.achievement.achievement_user.dto.event.GetWarningBudgetEvent;
 import dev.book.challenge.rank.SpendCreatedRankingEvent;
 import dev.book.global.config.Firebase.dto.LimitWarningFcmEvent;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AccountBookService {
+public class AccountBookSpendService {
     private final UserRepository userRepository;
     private final BudgetRepository budgetRepository;
     private final CategoryRepository categoryRepository;
@@ -46,24 +48,24 @@ public class AccountBookService {
 
     private final ApplicationEventPublisher publisher;
 
-    @Transactional(readOnly = true)
-    public AccountBookSpendResponse getSpendOne(Long id, Long userId) {
+    @Transactional
+    public AccountBookResponse getSpendOne(Long id, Long userId) {
         isExistsUser(userId);
         AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
 
-        return AccountBookSpendResponse.from(accountBook);
+        return AccountBookResponse.from(accountBook);
     }
 
-    @Transactional(readOnly = true)
-    public AccountBookSpendListResponse getSpendList(Long userId, int page) {
+    @Transactional
+    public AccountBookListResponse getSpendList(Long userId, int page) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
-        Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.SPEND, pageable);
+        Page<AccountBook> accountBooks = accountBookRepository.findByAccountBookWithPage(userId, CategoryType.SPEND, pageable);
 
-        List<AccountBookSpendResponse> accountBookSpendResponseList = accountBooks.getContent().stream()
-                .map(AccountBookSpendResponse::from)
+        List<AccountBookResponse> accountBookSpendResponseList = accountBooks.getContent().stream()
+                .map(AccountBookResponse::from)
                 .toList();
 
-        return new AccountBookSpendListResponse(
+        return new AccountBookListResponse(
                 accountBookSpendResponseList,
                 accountBooks.getTotalPages(),
                 accountBooks.getTotalElements(),
@@ -72,7 +74,7 @@ public class AccountBookService {
     }
 
     @Transactional
-    public AccountBookSpendResponse createSpend(AccountBookSpendRequest request, UserEntity user) {
+    public AccountBookResponse createSpend(AccountBookSpendRequest request, UserEntity user) {
         Category category = getCategory(request.category());
         AccountBook accountBook = request.toEntity(user, category);
         AccountBook saved = accountBookRepository.save(accountBook);
@@ -81,16 +83,16 @@ public class AccountBookService {
 
         publisher.publishEvent(new SpendCreatedRankingEvent(accountBook));
 
-        return AccountBookSpendResponse.from(saved);
+        return AccountBookResponse.from(saved);
     }
 
     @Transactional
-    public AccountBookSpendResponse modifySpend(AccountBookSpendRequest request, Long id, Long userId) {
+    public AccountBookResponse modifySpend(AccountBookSpendRequest request, Long id, Long userId) {
         AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_SPEND);
         updateAccountBook(accountBook, request);
         accountBookRepository.flush();
 
-        return AccountBookSpendResponse.from(accountBook);
+        return AccountBookResponse.from(accountBook);
     }
 
     @Transactional
@@ -101,70 +103,17 @@ public class AccountBookService {
         return true;
     }
 
-    @Transactional(readOnly = true)
-    public AccountBookIncomeResponse getIncomeOne(Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
-
-        return AccountBookIncomeResponse.from(accountBook);
-    }
-
-    @Transactional(readOnly = true)
-    public AccountBookIncomeListResponse getIncomeList(Long userId, int page) {
-        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
-        Page<AccountBook> accountBooks = accountBookRepository.findAllByType(userId, CategoryType.INCOME, pageable);
-
-        List<AccountBookIncomeResponse> accountBookIncomeResponseList = accountBooks.getContent().stream()
-                .map(AccountBookIncomeResponse::from)
-                .toList();
-
-        return new AccountBookIncomeListResponse(
-                accountBookIncomeResponseList,
-                accountBooks.getTotalPages(),
-                accountBooks.getTotalElements(),
-                accountBooks.getNumber() + 1
-        );
-    }
-
     @Transactional
-    public AccountBookIncomeResponse createIncome(AccountBookIncomeRequest request, UserEntity user) {
-        Category category = getCategory(request.category());
-        AccountBook accountBook = request.toEntity(user, category);
-        AccountBook saved = accountBookRepository.save(accountBook);
-
-        if (request.repeat() != null)
-            publisher.publishEvent(new CreateFirstIncomeEvent(user));
-
-        return AccountBookIncomeResponse.from(saved);
-    }
-
-    @Transactional
-    public AccountBookIncomeResponse modifyIncome(Long id, AccountBookIncomeRequest request, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
-        updateAccountBook(accountBook, request);
-        accountBookRepository.flush();
-
-        return AccountBookIncomeResponse.from(accountBook);
-    }
-
-    @Transactional
-    public boolean deleteIncome(Long id, Long userId) {
-        AccountBook accountBook = findAccountBookOrThrow(id, AccountBookErrorCode.NOT_FOUND_INCOME);
-        accountBookRepository.delete(accountBook);
-
-        return true;
-    }
-
-    @Transactional
-    public AccountBookSpendListResponse getCategorySpendList(String category, Long userId, int page) {
+    public AccountBookListResponse getCategorySpendList(String category, Long userId, int page) {
         Category findCategory = getCategory(category);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         Page<AccountBook> categorySpendList = accountBookRepository.findByUserIdAndCategoryNameWithGraph(userId, findCategory.getId(), pageable);
 
-        List<AccountBookSpendResponse> accountBookSpendResponseList = categorySpendList.getContent().stream()
-                .map(AccountBookSpendResponse::from)
+        List<AccountBookResponse> accountBookSpendResponseList = categorySpendList.getContent().stream()
+                .map(AccountBookResponse::from)
                 .toList();
 
-        return new AccountBookSpendListResponse(
+        return new AccountBookListResponse(
                 accountBookSpendResponseList,
                 categorySpendList.getTotalPages(),
                 categorySpendList.getTotalElements(),
@@ -172,18 +121,17 @@ public class AccountBookService {
         );
     }
 
-    @Transactional
-    public List<AccountBookSpendResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
-        List<AccountBook> accountBookList = createAccountBookList(user, requestList);
+    public List<AccountBookResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
+        List<AccountBook> accountBookList = accountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
-        tempAccountBookRepository.deleteAllByUser(user);
+        accountBookRepository.deleteAllByUser(user);
 
         return savedAccountBookList.stream()
-                .map(AccountBookSpendResponse::from)
+                .map(AccountBookResponse::from)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AccountBookPeriodListResponse getAccountBookPeriod(Long userId, LocalDate startDate, LocalDate endDate, int page) {
         isExistsUser(userId);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
@@ -201,7 +149,6 @@ public class AccountBookService {
         );
     }
 
-    @Transactional(readOnly = true)
     public List<AccountBookMonthResponse> getMonthAccountBook(Long userId, AccountBookMonthRequest request) {
         isExistsUser(userId);
 
@@ -210,7 +157,7 @@ public class AccountBookService {
 
         List<AccountBook> findList = accountBookRepository.findAllMonth(userId, startDate, endDate);
 
-        return monthAccountBookList(findList, startDate, endDate);
+        return accountBookList(findList, startDate, endDate);
     }
 
     private void isExistsUser(Long userId) {
@@ -250,7 +197,7 @@ public class AccountBookService {
                 .orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_CATEGORY));
     }
 
-    private List<AccountBook> createAccountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
+    private List<AccountBook> accountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
 
         return requestList.accountBookSpendRequestList().stream()
                 .map(request -> {
@@ -261,7 +208,7 @@ public class AccountBookService {
                 .toList();
     }
 
-    private List<AccountBookMonthResponse> monthAccountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
+    private List<AccountBookMonthResponse> accountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
         List<AccountBookMonthResponse> responseList = new ArrayList<>();
         Map<LocalDate, List<AccountBook>> accountBookMap = groupAccountBooksByDate(findList);
 
@@ -350,7 +297,7 @@ public class AccountBookService {
         return "발송된 메시지가 없습니다.";
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<TempAccountBookResponse> getTempList(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
