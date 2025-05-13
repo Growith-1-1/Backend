@@ -13,6 +13,7 @@ import dev.book.challenge.user_challenge.repository.UserChallengeRepository;
 import dev.book.global.entity.Category;
 import dev.book.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,15 +24,17 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ChallengeScheduler {
     private final ChallengeRepository challengeRepository;
     private final UserChallengeRepository userChallengeRepository;
     private final AccountBookRepository accountBookRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Scheduled(cron = " 0 0 0 * * * ") //매일 자정에 챌린지 close
+    @Scheduled(cron = "0 0 0 * * *") //매일 자정에 챌린지 close
     @Transactional
     public void updateChallengeStatus() {
+        log.info("챌린지 상태 업데이트가 시작 되었습니다.");
         LocalDate today = LocalDate.now();
 
         List<Status> startStatuses = List.of(Status.RECRUITING, Status.RECRUITED);

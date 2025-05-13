@@ -125,7 +125,7 @@ public class AccountBookSpendService {
     public List<AccountBookResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
         List<AccountBook> accountBookList = accountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
-        accountBookRepository.deleteAllByUser(user);
+        tempAccountBookRepository.deleteAllByUser(user);
 
         return savedAccountBookList.stream()
                 .map(AccountBookResponse::from)
@@ -159,7 +159,7 @@ public class AccountBookSpendService {
 
         List<AccountBook> findList = accountBookRepository.findAllMonth(userId, startDate, endDate);
 
-        return accountBookList(findList, startDate, endDate);
+        return monthAccountBookList(findList, startDate, endDate);
     }
 
     private void isExistsUser(Long userId) {
@@ -199,7 +199,7 @@ public class AccountBookSpendService {
                 .orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_CATEGORY));
     }
 
-    private List<AccountBook> accountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
+    private List<AccountBook> createAccountBookList(UserEntity user, AccountBookSpendListRequest requestList) {
 
         return requestList.accountBookSpendRequestList().stream()
                 .map(request -> {
@@ -210,7 +210,7 @@ public class AccountBookSpendService {
                 .toList();
     }
 
-    private List<AccountBookMonthResponse> accountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
+    private List<AccountBookMonthResponse> monthAccountBookList(List<AccountBook> findList, LocalDate startDate, LocalDate endDate) {
         List<AccountBookMonthResponse> responseList = new ArrayList<>();
         Map<LocalDate, List<AccountBook>> accountBookMap = groupAccountBooksByDate(findList);
 

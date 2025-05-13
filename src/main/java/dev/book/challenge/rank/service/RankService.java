@@ -10,6 +10,7 @@ import dev.book.challenge.repository.ChallengeRepository;
 import dev.book.challenge.user_challenge.repository.UserChallengeRepository;
 import dev.book.global.entity.Category;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RankService {
 
     private final ChallengeRepository challengeRepository;
@@ -26,6 +28,7 @@ public class RankService {
 
     public void checkRank(Long challengeId) {
         // 카테고리를 조인해서 챌린지아이디로 조회 하고 그 챌린지의 속한 유저 아이디를 불러온다.
+        log.info("순위체크를 시도하는 챌린지 :{}",challengeId);
         Challenge challenge = challengeRepository.findByIdJoinCategory(challengeId).orElseThrow(() -> new ChallengeException(ErrorCode.CHALLENGE_NOT_FOUND));
         List<Long> participantIds = userChallengeRepository.findUserIdByChallengeId(challengeId);
         List<ChallengeCategory> challengeCategories = challenge.getChallengeCategories();

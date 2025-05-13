@@ -20,7 +20,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -32,6 +35,7 @@ public class UserEntity extends BaseTimeEntity {
     private Long id;
 
     @NotNull
+    @Column(unique = true)
     private String email;
 
     @NotNull
@@ -105,23 +109,27 @@ public class UserEntity extends BaseTimeEntity {
     }
 
     public void updateCategory(List<Category> categories) {
-        if (!this.userCategory.isEmpty())
-            this.userCategory.clear();
+        Set<Category> newCategorySet = new HashSet<>(categories);
+        Set<Category> currentCategorySet = this.userCategory.stream()
+                .map(UserCategory::getCategory)
+                .collect(Collectors.toSet());
 
-        List<UserCategory> userCategories = getUserCategories(categories);
-        for (UserCategory uc : userCategories) {
-            uc.setUser(this);
-            this.userCategory.add(uc);
-        }
-    }
+        //현재엔 있지만 새로운 리스트엔 없는 것
+        Set<Category> toRemove = new HashSet<>(currentCategorySet);
+        toRemove.removeAll(newCategorySet);
 
-    private List<UserCategory> getUserCategories(List<Category> categories) {
-        List<UserCategory> userCategories = new ArrayList<>();
-        for (Category category : categories) {
+        //새로 들어왔지만 현재엔 없는 것
+        Set<Category> toAdd = new HashSet<>(newCategorySet);
+        toAdd.removeAll(currentCategorySet);
+
+        // 삭제
+        this.userCategory.removeIf(uc -> toRemove.contains(uc.getCategory()));
+
+        // 추가
+        for (Category category : toAdd) {
             UserCategory userCategory = new UserCategory(this, category);
-            userCategories.add(userCategory);
+            this.userCategory.add(userCategory);
         }
-        return userCategories;
     }
 
     public void updateProfileImage(String profileImageUrl) {

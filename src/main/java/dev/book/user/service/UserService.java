@@ -141,6 +141,11 @@ public class UserService {
         return new UserCategoryResponse(userCategories);
     }
 
+    /**
+     * 유저가 달성한 업적 반환
+     * @param userDetails
+     * @return
+     */
     public List<UserAchievementResponse> getUserAchievement(CustomUserDetails userDetails) {
         List<AchievementUser> achievementUsers = achievementUserRepository.findAllByUser(userDetails.user());
         return achievementUsers.stream().map(
@@ -151,6 +156,11 @@ public class UserService {
                 )).toList();
     }
 
+    /**
+     * 유저의 챌린지 정보 반환
+     * @param userDetails
+     * @return
+     */
     public UserChallengeInfoResponse getUserChallengeInfo(CustomUserDetails userDetails) {
         UserEntity user = userDetails.user();
         return new UserChallengeInfoResponse(user.getSavings(), user.getCompletedChallenges(),

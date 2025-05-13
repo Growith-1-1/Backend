@@ -14,6 +14,7 @@ import dev.book.user.entity.UserEntity;
 import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import static dev.book.user.exception.UserErrorCode.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChallengeInviteService {
 
     private final ChallengeInviteRepository challengeInviteRepository;
@@ -39,6 +41,7 @@ public class ChallengeInviteService {
         Challenge challenge = getChallenge(challengeId);
         UserEntity inviteUser = userRepository.findByEmail(challengeInviteRequest.email()).orElseThrow(() -> new UserErrorException(USER_NOT_FOUND));
 
+        log.info("챌린지 초대 요청:초대한 사용자 ID = {}, 초대받은 사용자 이메일 = {}", user.getId(), challengeInviteRequest.email());
         isNotParticipant(challengeId, user);// 자신이 참가하지않은 챌린지에 초대 하는 상황
         isAlreadyInvited(inviteUser, challenge); // 이미 초대가 된 상황일때
 
@@ -66,6 +69,7 @@ public class ChallengeInviteService {
         challengeInviteRepository.delete(challengeInvite);
 
         UserChallenge userChallenge = UserChallenge.of(user, challengeInvite.getChallenge());
+        log.info("챌린지를 수락 완료 하였습니다.");
         userChallengeRepository.save(userChallenge);
     }
 
@@ -74,6 +78,7 @@ public class ChallengeInviteService {
 
         ChallengeInvite challengeInvite = challengeInviteRepository.findByIdAndInviteUserId(inviteId, user.getId()).orElseThrow(() -> new ChallengeException(CHALLENGE_NOT_FOUND_INVITED));
         challengeInvite.reject();
+        log.info("챌린지를 거절 완료 하였습니다.");
         challengeInviteRepository.delete(challengeInvite);
     }
 
