@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <property name="LOG_PATH" value="${LOG_FILE_PATH:-logs}" />
+    <property name="FILE_LOG_PATTERN"
+              value="{&quot;timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSS}&quot;, &quot;level&quot;:&quot;%level&quot;, &quot;thread&quot;:&quot;%thread&quot;, &quot;logger&quot;:&quot;%logger{36}&quot;, &quot;message&quot;:&quot;%msg&quot;, &quot;exception&quot;:&quot;%ex&quot;}" />
+
+    <!-- 콘솔 출력 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 공통 파일 출력 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>${FILE_LOG_PATTERN}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- FCM 로그 별도 출력 -->
+    <appender name="FCM_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/fcm.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/fcm.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>${FILE_LOG_PATTERN}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- WebSocket 로그 별도 출력 -->
+    <appender name="WS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/websocket.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/websocket.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>${FILE_LOG_PATTERN}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- SSE 로그 별도 출력 -->
+    <appender name="SSE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/sse.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/sse.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>${FILE_LOG_PATTERN}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Controller 로그 별도 출력 -->
+    <appender name="CONTROLLER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/controller.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/controller.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>${FILE_LOG_PATTERN}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 루트 로거 (모든 로그) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- FCM 전용 로거 -->
+    <logger name="dev.book.global.config.Firebase.service.FCMService" level="INFO" additivity="false">
+        <appender-ref ref="FCM_FILE"/>
+    </logger>
+
+    <!-- WebSocket 전용 로거 -->
+    <logger name="dev.book.global.websocket" level="INFO" additivity="false">
+        <appender-ref ref="WS_FILE"/>
+    </logger>
+
+    <!-- STOMP (Spring Messaging) -->
+    <logger name="org.springframework.messaging" level="INFO" />
+
+    <!-- SSE 저장소 -->
+    <logger name="dev.book.global.sse" level="INFO" additivity="false">
+        <appender-ref ref="SSE_FILE"/>
+    </logger>
+
+    <!-- Controller AOP 로그 -->
+    <logger name="dev.book.global.log.ControllerLogAspect" level="INFO" additivity="false">
+        <appender-ref ref="CONTROLLER_FILE"/>
+    </logger>
+
+</configuration>

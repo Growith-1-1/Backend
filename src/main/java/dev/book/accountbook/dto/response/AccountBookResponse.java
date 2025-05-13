@@ -6,10 +6,10 @@ import dev.book.accountbook.entity.AccountBook;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public record AccountBookSpendResponse(Long id, String title, String category, int amount,
-                                       LocalDateTime updatedAt, String memo, LocalDateTime endDate, LocalDate occurredAt, Repeat repeat) {
-    public static AccountBookSpendResponse from(AccountBook entity) {
-        return new AccountBookSpendResponse(
+public record AccountBookResponse(Long id, String title, String category, int amount, LocalDateTime updatedAt,
+                                  String memo, LocalDateTime endDate, LocalDate occurredAt, Repeat repeat) {
+    public static AccountBookResponse from(AccountBook entity) {
+        return new AccountBookResponse(
                 entity.getId(),
                 entity.getTitle(),
                 entity.getCategory().getKorean(),

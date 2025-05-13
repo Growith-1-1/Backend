@@ -1,6 +1,6 @@
 package dev.book.user.controller.swagger;
 
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookResponse;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import dev.book.user.dto.request.UserCategoriesRequest;
 import dev.book.user.dto.request.UserProfileUpdateRequest;
@@ -19,7 +19,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -92,7 +93,7 @@ public interface UserApi {
     @Operation(summary = "유저의 업적 내용 반환", description = "유저가 달성한 업적들의 내용들을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "유저의 업적들 반환 완료",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = AccountBookSpendResponse.class)))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = AccountBookResponse.class)))),
             @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없습니다.")
     })
     ResponseEntity<List<UserAchievementResponse>> getUserAchievement(@AuthenticationPrincipal CustomUserDetails userDetails);

@@ -20,6 +20,7 @@ import dev.book.user.exception.UserErrorCode;
 import dev.book.user.exception.UserErrorException;
 import dev.book.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CodefService {
@@ -62,16 +63,16 @@ public class CodefService {
     private final RsaEncryptUtil rsaEncryptUtil;
     private final ApplicationEventPublisher publisher;
 
-    public String getAccessToken() {
+
+    public void getAccessToken() {
         try {
             HttpEntity<String> entity = getTokenRequest();
             ResponseEntity<String> response = restTemplate.postForEntity(TOKEN_URL, entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                HashMap<String, Object> responseMap = objectMapper.readValue(response.getBody(), new TypeReference<>() {
-                });
+                HashMap<String, Object> responseMap = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
 
-                return (String) responseMap.get("access_token");
+                log.info((String) responseMap.get("access_token"));
             } else {
                 throw new RuntimeException("토큰 발급 실패: " + response.getStatusCode());
             }

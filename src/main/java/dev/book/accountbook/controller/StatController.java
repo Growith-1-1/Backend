@@ -2,7 +2,7 @@ package dev.book.accountbook.controller;
 
 import dev.book.accountbook.controller.swagger.StatApi;
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.service.StatService;
 import dev.book.accountbook.type.Frequency;
@@ -31,9 +31,9 @@ public class StatController implements StatApi {
 
     @Override
     @GetMapping("/category/{frequency}")
-    public ResponseEntity<AccountBookSpendListResponse> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category, @RequestParam int page) {
+    public ResponseEntity<AccountBookListResponse> categoryList(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Frequency frequency, @RequestParam String category, @RequestParam int page) {
         Long userId = userDetails.user().getId();
-        AccountBookSpendListResponse list = statService.categoryList(userId, frequency, category, page);
+        AccountBookListResponse list = statService.categoryList(userId, frequency, category, page);
 
         return ResponseEntity.ok(list);
     }

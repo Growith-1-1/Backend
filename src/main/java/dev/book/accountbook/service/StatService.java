@@ -1,8 +1,8 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
+import dev.book.accountbook.dto.response.AccountBookResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -47,7 +47,7 @@ public class StatService {
     }
 
     @Transactional
-    public AccountBookSpendListResponse categoryList(Long userId, Frequency frequency, String category, int page) {
+    public AccountBookListResponse categoryList(Long userId, Frequency frequency, String category, int page) {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
 
@@ -66,14 +66,14 @@ public class StatService {
         return accountBookRepository.findTopCategoriesByUserAndPeriod(userId, startDate, LocalDate.now(), CategoryType.SPEND);
     }
 
-    private AccountBookSpendListResponse getCategoryList(Long userId, String category, LocalDate starDate, Pageable pageable) {
+    private AccountBookListResponse getCategoryList(Long userId, String category, LocalDate starDate, Pageable pageable) {
         Page<AccountBook> responses = accountBookRepository.findByCategory(userId, CategoryType.SPEND, category, starDate, LocalDate.now(), pageable);
 
-        List<AccountBookSpendResponse> accountBookSpendResponseList = responses.getContent().stream()
-                .map(AccountBookSpendResponse::from)
+        List<AccountBookResponse> accountBookSpendResponseList = responses.getContent().stream()
+                .map(AccountBookResponse::from)
                 .toList();
 
-        return new AccountBookSpendListResponse(
+        return new AccountBookListResponse(
                 accountBookSpendResponseList,
                 responses.getTotalPages(),
                 responses.getTotalElements(),

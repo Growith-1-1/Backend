@@ -1,6 +1,6 @@
 package dev.book.global.config.Firebase.controller;
 
-import dev.book.accountbook.service.AccountBookService;
+import dev.book.accountbook.service.AccountBookSpendService;
 import dev.book.global.config.Firebase.controller.swagger.FcmControllerApi;
 import dev.book.global.config.Firebase.service.FCMService;
 import dev.book.global.config.security.dto.CustomUserDetails;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/fcm")
 public class FcmController implements FcmControllerApi {
     private final FCMService fcmService;
-    private final AccountBookService accountBookService;
+    private final AccountBookSpendService accountBookSpendService;
 
     @Override
     @PostMapping("/token")
@@ -35,7 +35,7 @@ public class FcmController implements FcmControllerApi {
     @Override
     @GetMapping("/send")
     public ResponseEntity<String> sendFcmMessage(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String message = accountBookService.sendMessage(userDetails.user());
+        String message = accountBookSpendService.sendMessage(userDetails.user());
 
         return ResponseEntity.ok(message);
     }

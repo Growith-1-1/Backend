@@ -3,6 +3,7 @@ package dev.book.accountbook.repository;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.dto.response.AccountBookWeekConsumePerUserResponse;
 import dev.book.accountbook.entity.AccountBook;
+import dev.book.accountbook.repository.querydsl.account.AccountBookRepositoryCustom;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.challenge.rank.dto.response.RankResponse;
 import dev.book.global.entity.Category;
@@ -20,23 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AccountBookRepository extends JpaRepository<AccountBook, Long> {
+public interface AccountBookRepository extends JpaRepository<AccountBook, Long>, AccountBookRepositoryCustom {
     Optional<AccountBook> findByIdAndUserId(Long id, Long userId);
-
-    @EntityGraph(attributePaths = {"category"})
-    @Query("""
-            SELECT a
-            FROM AccountBook a
-                JOIN a.category c
-                WHERE a.user.id = :userId
-                    AND a.type = :categoryType
-                ORDER BY a.occurredAt DESC
-            """)
-    Page<AccountBook> findAllByType(
-            @Param("userId") Long userId,
-            @Param("categoryType") CategoryType categoryType,
-            Pageable pageable
-    );
 
     @EntityGraph(attributePaths = {"user", "category"})
     @Query("""

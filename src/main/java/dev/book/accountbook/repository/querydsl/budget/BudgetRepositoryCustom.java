@@ -1,4 +1,4 @@
-package dev.book.accountbook.repository.querydsl;
+package dev.book.accountbook.repository.querydsl.budget;
 
 import dev.book.accountbook.dto.response.BudgetResponse;
 
