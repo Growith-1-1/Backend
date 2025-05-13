@@ -26,6 +26,7 @@ public class BudgetService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional(readOnly = true)
     public BudgetResponse getBudget(Long userId, int month) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
         Budget budget = budgetRepository.findByMonthAndUserId(month, user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));

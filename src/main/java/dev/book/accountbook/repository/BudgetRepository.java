@@ -1,7 +1,7 @@
 package dev.book.accountbook.repository;
 
 import dev.book.accountbook.entity.Budget;
-import dev.book.accountbook.repository.querydsl.BudgetRepositoryCustom;
+import dev.book.accountbook.repository.querydsl.budget.BudgetRepositoryCustom;
 import dev.book.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

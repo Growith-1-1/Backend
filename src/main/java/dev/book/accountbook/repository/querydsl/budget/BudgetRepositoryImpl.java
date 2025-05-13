@@ -1,4 +1,4 @@
-package dev.book.accountbook.repository.querydsl;
+package dev.book.accountbook.repository.querydsl.budget;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
