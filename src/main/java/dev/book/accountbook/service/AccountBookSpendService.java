@@ -123,7 +123,7 @@ public class AccountBookSpendService {
 
     @Transactional
     public List<AccountBookResponse> createSpendList(UserEntity user, AccountBookSpendListRequest requestList) {
-        List<AccountBook> accountBookList = accountBookList(user, requestList);
+        List<AccountBook> accountBookList = createAccountBookList(user, requestList);
         List<AccountBook> savedAccountBookList = accountBookRepository.saveAll(accountBookList);
         tempAccountBookRepository.deleteAllByUser(user);
 
