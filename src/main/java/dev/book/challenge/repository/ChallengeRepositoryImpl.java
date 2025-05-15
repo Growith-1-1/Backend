@@ -2,12 +2,13 @@ package dev.book.challenge.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.book.challenge.dto.response.ChallengeReadResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,12 +38,11 @@ public class ChallengeRepositoryImpl implements ChallengeJpaRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long totalCount = jpaQueryFactory.select(challenge.count())
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(challenge.count())
                 .from(challenge)
                 .where(eqTitle(title),
-                        eqText(text))
-                .fetchOne();
-        return new PageImpl<>(content, pageable, totalCount);
+                        eqText(text));
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 
     }
 
