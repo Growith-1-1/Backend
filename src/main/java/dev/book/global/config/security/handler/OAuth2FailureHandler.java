@@ -19,6 +19,6 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
 
-        getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000/auth/signin");
+        getRedirectStrategy().sendRedirect(request, response, "https://the-ham-phi.vercel.app/auth/signin");
     }
 }

@@ -37,7 +37,7 @@ import java.util.Optional;
 public class UserFriendService {
 
 //    @Value("${springdoc.servers.production.url}")
-    private String DOMAIN = "http://localhost:3000";
+    private String DOMAIN = "https://the-ham-phi.vercel.app";
     private final String MAIN_URL = "/main";
 
     private final UserRepository userRepository;

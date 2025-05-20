@@ -42,10 +42,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         switch (userLoginState){
             case LOGIN_SUCCESS -> {
                 jwtUtil.generateToken(response, authentication);
-                getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000/main");
+                getRedirectStrategy().sendRedirect(request, response, "https://the-ham-phi.vercel.app/main");
             }
             case PROFILE_INCOMPLETE ->
-                    getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000/auth/signup?email="+authentication.getName());
+                    getRedirectStrategy().sendRedirect(request, response, "https://the-ham-phi.vercel.app/auth/signup?email="+authentication.getName());
         }
     }
 
