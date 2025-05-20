@@ -85,7 +85,7 @@
     </logger>
 
     <!-- WebSocket 전용 로거 -->
-    <logger name="dev.book.global.websocket" level="INFO" additivity="false">
+    <logger name="dev.book.global.log.WebSocketLog" level="INFO" additivity="false">
         <appender-ref ref="WS_FILE"/>
     </logger>
 
@@ -93,7 +93,7 @@
     <logger name="org.springframework.messaging" level="INFO" />
 
     <!-- SSE 저장소 -->
-    <logger name="dev.book.global.sse" level="INFO" additivity="false">
+    <logger name="dev.book.global.log.SseEmitterLogAspect" level="INFO" additivity="false">
         <appender-ref ref="SSE_FILE"/>
     </logger>
 
