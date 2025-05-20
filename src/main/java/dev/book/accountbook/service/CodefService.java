@@ -96,7 +96,7 @@ public class CodefService {
             throw new CodefErrorException(CodefErrorCode.UNKNOWN_ERROR);
         }
 
-        validationCode(code);
+        validateCode(code);
         codefRepository.save(createRequest.toEntity(user, createRequest.bank().getCode(), aesUtil.encrypt(createRequest.accountNumber()), connectedId));
         List<TempAccountBookResponse> savedList = getTransactions(user);
 
@@ -185,7 +185,7 @@ public class CodefService {
         return new HttpEntity<>(body, headers);
     }
 
-    private void validationCode(String code) {
+    private void validateCode(String code) {
         switch (code) {
             case "CF-00000" -> {
             }
