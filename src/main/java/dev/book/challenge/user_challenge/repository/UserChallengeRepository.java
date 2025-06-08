@@ -39,9 +39,6 @@ public interface UserChallengeRepository extends JpaRepository<UserChallenge, Lo
 
     @Query("""
             SELECT uc FROM UserChallenge uc
-            JOIN FETCH uc.challenge c
-            JOIN FETCH c.challengeCategories cc
-            JOIN FETCH cc.category ca
             WHERE uc.user.id=:id
             """)
     List<UserChallenge> findChallengeByUserId(Long id, Pageable pageable);
