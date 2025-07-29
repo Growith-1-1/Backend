@@ -1,7 +1,7 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -86,10 +86,10 @@ class StatServiceUnitTest {
         given(accountBookRepository.findByCategory(anyLong(), any(), any(), any(LocalDate.class), any(LocalDate.class), pageable)).willReturn(mockBooks);
 
         // when
-        AccountBookSpendListResponse result = statService.categoryList(user.getId(), frequency, "hobby", 1);
+        AccountBookListResponse result = statService.categoryList(user.getId(), frequency, "hobby", 1);
 
         // then
-        assertThat(2).isEqualTo(result.accountBookSpendResponseList().size());
+        assertThat(2).isEqualTo(result.accountBookResponseList().size());
     }
 
     @Test

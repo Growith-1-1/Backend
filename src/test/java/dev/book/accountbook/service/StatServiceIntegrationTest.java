@@ -1,7 +1,7 @@
 package dev.book.accountbook.service;
 
 import dev.book.accountbook.dto.response.AccountBookConsumeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
 import dev.book.accountbook.dto.response.AccountBookStatResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -125,14 +125,14 @@ public class StatServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        AccountBookSpendListResponse result1 = statService.categoryList(user.getId(), Frequency.MONTHLY, "cafe_snack", 1);
-        AccountBookSpendListResponse result2 = statService.categoryList(user.getId(), Frequency.MONTHLY, "food", 1);
-        AccountBookSpendListResponse result3 = statService.categoryList(user.getId(), Frequency.MONTHLY, "transportation", 1);
+        AccountBookListResponse result1 = statService.categoryList(user.getId(), Frequency.MONTHLY, "cafe_snack", 1);
+        AccountBookListResponse result2 = statService.categoryList(user.getId(), Frequency.MONTHLY, "food", 1);
+        AccountBookListResponse result3 = statService.categoryList(user.getId(), Frequency.MONTHLY, "transportation", 1);
 
         // then
-        assertThat(result1.accountBookSpendResponseList()).hasSize(1);
-        assertThat(result2.accountBookSpendResponseList()).hasSize(1);
-        assertThat(result3.accountBookSpendResponseList()).hasSize(1);
+        assertThat(result1.accountBookResponseList()).hasSize(1);
+        assertThat(result2.accountBookResponseList()).hasSize(1);
+        assertThat(result3.accountBookResponseList()).hasSize(1);
     }
 
     @Test

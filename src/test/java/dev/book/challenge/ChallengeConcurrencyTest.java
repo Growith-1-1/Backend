@@ -77,7 +77,7 @@ public class ChallengeConcurrencyTest {
             users.add(user);
         }
 
-        userRepository.saveAll(users);
+        userRepository.saveAll(users); // 캡슐화
 
         UserEntity creator = UserEntity.builder().email("test@naver.com").name("생성자").nickname("naver").build();
         UserEntity savedCreator = userRepository.save(creator);

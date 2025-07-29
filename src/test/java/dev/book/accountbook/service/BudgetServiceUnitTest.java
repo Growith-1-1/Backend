@@ -54,7 +54,7 @@ class BudgetServiceUnitTest {
         given(userRepository.findById(any())).willReturn(Optional.of(user));
         given(budgetRepository.save(any(Budget.class))).willReturn(budgetEntity);
         given(budgetRepository.existsByUserId(user.getId())).willReturn(false);
-        given(budgetRepository.findBudgetWithTotal(budgetEntity.getId())).willReturn(budgetResponse);
+        given(budgetRepository.findBudgetWithTotal(budgetEntity.getId(), LocalDate.now())).willReturn(budgetResponse);
 
         // when
         BudgetResponse response = budgetService.createBudget(user.getId(), budgetRequest);
@@ -93,10 +93,10 @@ class BudgetServiceUnitTest {
 
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
         given(budgetRepository.findByMonthAndUserId(month, user.getId())).willReturn(Optional.of(budget));
-        given(budgetRepository.findBudgetWithTotal(budget.getId())).willReturn(budgetResponse);
+        given(budgetRepository.findBudgetWithTotal(budget.getId(), LocalDate.now())).willReturn(budgetResponse);
 
         // when
-        BudgetResponse response = budgetService.getBudget(user.getId(), LocalDate.now().getMonthValue());
+        BudgetResponse response = budgetService.getBudget(user.getId(), LocalDate.now());
 
         // then
         assertThat(response.budget()).isEqualTo(budget.getBudgetLimit());
@@ -113,7 +113,7 @@ class BudgetServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now().getMonthValue()))
+        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now()))
                 .isInstanceOf(UserErrorException.class)
                 .hasMessage("유저를 찾을 수 없습니다.");
     }
@@ -129,7 +129,7 @@ class BudgetServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now().getMonthValue()))
+        assertThatThrownBy(() -> budgetService.getBudget(userId, LocalDate.now()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 예산입니다.");
     }
@@ -146,7 +146,7 @@ class BudgetServiceUnitTest {
         BudgetResponse modifyResponse = new BudgetResponse(budgetId, 100000, 1000);
 
         given(budgetRepository.findByIdAndUserId(budgetId, user.getId())).willReturn(Optional.of(budget));
-        given(budgetRepository.findBudgetWithTotal(budget.getId())).willReturn(modifyResponse);
+        given(budgetRepository.findBudgetWithTotal(budget.getId(), LocalDate.now())).willReturn(modifyResponse);
 
         // when
         BudgetResponse response = budgetService.modify(user.getId(), budgetId, modifyRequest);
