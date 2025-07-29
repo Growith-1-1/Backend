@@ -1,8 +1,8 @@
-package dev.book.global.config.Firebase.controller;
+package dev.book.global.config.firebase.controller;
 
 import dev.book.accountbook.service.AccountBookSpendService;
-import dev.book.global.config.Firebase.controller.swagger.FcmControllerApi;
-import dev.book.global.config.Firebase.service.FCMService;
+import dev.book.global.config.firebase.controller.swagger.FcmControllerApi;
+import dev.book.global.config.firebase.service.FCMService;
 import dev.book.global.config.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

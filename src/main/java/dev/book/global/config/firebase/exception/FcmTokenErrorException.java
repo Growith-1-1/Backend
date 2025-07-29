@@ -1,4 +1,4 @@
-package dev.book.global.config.Firebase.exception;
+package dev.book.global.config.firebase.exception;
 
 import dev.book.global.exception.CustomErrorException;
 import lombok.Getter;

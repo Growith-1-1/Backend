@@ -1,4 +1,4 @@
-package dev.book.global.config.Firebase.entity;
+package dev.book.global.config.firebase.entity;
 
 import dev.book.user.entity.UserEntity;
 import jakarta.persistence.*;

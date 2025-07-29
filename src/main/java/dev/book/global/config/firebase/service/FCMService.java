@@ -1,4 +1,4 @@
-package dev.book.global.config.Firebase.service;
+package dev.book.global.config.firebase.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -7,11 +7,11 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import dev.book.accountbook.dto.event.CreateTransEvent;
 import dev.book.achievement.entity.Achievement;
-import dev.book.global.config.Firebase.dto.LimitWarningFcmEvent;
-import dev.book.global.config.Firebase.entity.FcmToken;
-import dev.book.global.config.Firebase.exception.FcmTokenErrorCode;
-import dev.book.global.config.Firebase.exception.FcmTokenErrorException;
-import dev.book.global.config.Firebase.repository.FcmTokenRepository;
+import dev.book.global.config.firebase.dto.LimitWarningFcmEvent;
+import dev.book.global.config.firebase.entity.FcmToken;
+import dev.book.global.config.firebase.exception.FcmTokenErrorCode;
+import dev.book.global.config.firebase.exception.FcmTokenErrorException;
+import dev.book.global.config.firebase.repository.FcmTokenRepository;
 import dev.book.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
