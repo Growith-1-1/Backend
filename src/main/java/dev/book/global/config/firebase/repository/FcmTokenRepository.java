@@ -1,6 +1,6 @@
-package dev.book.global.config.Firebase.repository;
+package dev.book.global.config.firebase.repository;
 
-import dev.book.global.config.Firebase.entity.FcmToken;
+import dev.book.global.config.firebase.entity.FcmToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

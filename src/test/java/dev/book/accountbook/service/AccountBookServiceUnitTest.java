@@ -3,10 +3,8 @@ package dev.book.accountbook.service;
 import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.request.Repeat;
-import dev.book.accountbook.dto.response.AccountBookIncomeListResponse;
-import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
+import dev.book.accountbook.dto.response.AccountBookResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -60,7 +58,8 @@ class AccountBookServiceUnitTest {
     @Mock
     IndividualAchievementStatusService individualAchievementStatusService;
     @InjectMocks
-    private AccountBookService accountBookService;
+    private AccountBookSpendService accountBookSpendService;
+    private AccountBookIncomeService accountBookIncomeService;
 
     private final Long userId = 1L;
     private final Long accountBookId = 100L;
@@ -82,7 +81,7 @@ class AccountBookServiceUnitTest {
         given(userRepository.existsById(userId)).willReturn(true);
 
         // when
-        AccountBookSpendResponse result = accountBookService.getSpendOne(accountBookId, userId);
+        AccountBookResponse result = accountBookSpendService.getSpendOne(accountBookId, userId);
 
         // then
         assertThat(result).isNotNull();
@@ -98,7 +97,7 @@ class AccountBookServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.getSpendOne(accountBookId, userId))
+        assertThatThrownBy(() -> accountBookSpendService.getSpendOne(accountBookId, userId))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 소비내역입니다.");
     }
@@ -115,13 +114,13 @@ class AccountBookServiceUnitTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         Page<AccountBook> mockList = new PageImpl<>(List.of(accountBook, accountBook));
-        given(accountBookRepository.findAllByType(anyLong(), any(), pageable)).willReturn(mockList);
+        given(accountBookRepository.findByAccountBookWithPage(anyLong(), any(), pageable)).willReturn(mockList);
 
         // when
-        AccountBookSpendListResponse result = accountBookService.getSpendList(userId, 1);
+        AccountBookListResponse result = accountBookSpendService.getSpendList(userId, 1);
 
         // then
-        assertThat(result.accountBookSpendResponseList().size()).isEqualTo(2);
+        assertThat(result.accountBookResponseList().size()).isEqualTo(2);
     }
 
     @Test
@@ -138,7 +137,7 @@ class AccountBookServiceUnitTest {
         willDoNothing().given(publisher).publishEvent(any(SpendCreatedRankingEvent.class));
 
         // when
-        AccountBookSpendResponse result = accountBookService.createSpend(request, user);
+        AccountBookResponse result = accountBookSpendService.createSpend(request, user);
 
         // then
         assertThat(result).isNotNull();
@@ -162,7 +161,7 @@ class AccountBookServiceUnitTest {
         given(categoryRepository.findByCategory("food")).willReturn(Optional.of(new Category("food", "식비")));
 
         // when
-        AccountBookSpendResponse result = accountBookService.createSpend(request, user);
+        AccountBookResponse result = accountBookSpendService.createSpend(request, user);
 
         // then
         assertThat(result).isNotNull();
@@ -191,7 +190,7 @@ class AccountBookServiceUnitTest {
         given(categoryRepository.findByCategory("cafe_snack")).willReturn(Optional.of(new Category("cafe_snack", "카페 / 간식")));
 
         // when
-        AccountBookSpendResponse result = accountBookService.modifySpend(request, id, userId);
+        AccountBookResponse result = accountBookSpendService.modifySpend(request, id, userId);
 
         // then
         assertThat(result).isNotNull();
@@ -211,7 +210,7 @@ class AccountBookServiceUnitTest {
         given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
-        boolean result = accountBookService.deleteSpend(accountBookId, userId);
+        boolean result = accountBookSpendService.deleteSpend(accountBookId, userId);
 
         // then
         assertTrue(result);
@@ -225,7 +224,7 @@ class AccountBookServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.deleteSpend(accountBookId, userId))
+        assertThatThrownBy(() -> accountBookSpendService.deleteSpend(accountBookId, userId))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 소비내역입니다.");
     }
@@ -242,7 +241,7 @@ class AccountBookServiceUnitTest {
         given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
-        AccountBookIncomeResponse result = accountBookService.getIncomeOne(accountBookId, userId);
+        AccountBookResponse result = accountBookIncomeService.getIncomeOne(accountBookId, userId);
 
         // then
         assertThat(result).isNotNull();
@@ -256,7 +255,7 @@ class AccountBookServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.getIncomeOne(accountBookId, userId))
+        assertThatThrownBy(() -> accountBookIncomeService.getIncomeOne(accountBookId, userId))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }
@@ -272,13 +271,13 @@ class AccountBookServiceUnitTest {
         AccountBook accountBook = request.toEntity(userEntity, category);
         Page<AccountBook> mockList = new PageImpl<>(List.of(accountBook, accountBook));
         Pageable pageable = PageRequest.of(0, 10);
-        given(accountBookRepository.findAllByType(anyLong(), any(), pageable)).willReturn(mockList);
+        given(accountBookRepository.findByAccountBookWithPage(anyLong(), any(), pageable)).willReturn(mockList);
 
         // when
-        AccountBookIncomeListResponse result = accountBookService.getIncomeList(userId, 1);
+        AccountBookListResponse result = accountBookIncomeService.getIncomeList(userId, 1);
 
         // then
-        assertThat(result.accountBookIncomeResponseList().size()).isEqualTo(2);
+        assertThat(result.accountBookResponseList().size()).isEqualTo(2);
     }
 
     @Test
@@ -293,7 +292,7 @@ class AccountBookServiceUnitTest {
         given(categoryRepository.findByCategory("salary")).willReturn(Optional.of(new Category("salary", "급여")));
 
         // when
-        AccountBookIncomeResponse result = accountBookService.createIncome(request, user);
+        AccountBookResponse result = accountBookIncomeService.createIncome(request, user);
 
         // then
         assertThat(result).isNotNull();
@@ -316,7 +315,7 @@ class AccountBookServiceUnitTest {
         given(categoryRepository.findByCategory("salary")).willReturn(Optional.of(new Category("salary", "급여")));
 
         // when
-        AccountBookIncomeResponse result = accountBookService.createIncome(request, user);
+        AccountBookResponse result = accountBookIncomeService.createIncome(request, user);
 
         // then
         assertThat(result).isNotNull();
@@ -345,7 +344,7 @@ class AccountBookServiceUnitTest {
         given(categoryRepository.findByCategory("salary")).willReturn(Optional.of(new Category("salary", "급여")));
 
         // when
-        AccountBookIncomeResponse result = accountBookService.modifyIncome(id, request, userId);
+        AccountBookResponse result = accountBookIncomeService.modifyIncome(id, request, userId);
 
         // then
         assertThat(result).isNotNull();
@@ -364,7 +363,7 @@ class AccountBookServiceUnitTest {
         given(accountBookRepository.findById(accountBookId)).willReturn(Optional.of(accountBook));
 
         // when
-        boolean result = accountBookService.deleteSpend(accountBookId, userId);
+        boolean result = accountBookSpendService.deleteSpend(accountBookId, userId);
 
         // then
         assertTrue(result);
@@ -378,7 +377,7 @@ class AccountBookServiceUnitTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.deleteIncome(accountBookId, userId))
+        assertThatThrownBy(() -> accountBookIncomeService.deleteIncome(accountBookId, userId))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }

@@ -1,7 +1,6 @@
 package dev.book.global.log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.book.global.config.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -24,18 +23,9 @@ public class ControllerLogAspect {
 
         String methodName = joinPoint.getSignature().toShortString();
 
-        Long userId = null;
-
-        for (Object arg : joinPoint.getArgs()) {
-            if (arg instanceof CustomUserDetails userDetails) {
-                userId = userDetails.user().getId();
-            }
-        }
-
         log.info("{}", objectMapper.writeValueAsString(Map.of(
                 "layer", "controller",
-                "method", methodName,
-                "userId", userId
+                "method", methodName
         )));
 
         return result;

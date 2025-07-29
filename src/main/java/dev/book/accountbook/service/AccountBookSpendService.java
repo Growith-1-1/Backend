@@ -16,7 +16,7 @@ import dev.book.accountbook.type.BudgetLimit;
 import dev.book.accountbook.type.CategoryType;
 import dev.book.achievement.achievement_user.dto.event.GetWarningBudgetEvent;
 import dev.book.challenge.rank.SpendCreatedRankingEvent;
-import dev.book.global.config.Firebase.dto.LimitWarningFcmEvent;
+import dev.book.global.config.firebase.dto.LimitWarningFcmEvent;
 import dev.book.global.entity.Category;
 import dev.book.global.repository.CategoryRepository;
 import dev.book.user.entity.UserEntity;

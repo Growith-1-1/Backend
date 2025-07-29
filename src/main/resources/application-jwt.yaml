@@ -18,6 +18,7 @@ spring:
         - "/signup"
         - "/login"
         - "/actuator/prometheus"
+        - "/api/v1/users/test"
 
 
   aes:

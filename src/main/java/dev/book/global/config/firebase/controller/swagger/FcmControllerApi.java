@@ -1,4 +1,4 @@
-package dev.book.global.config.Firebase.controller.swagger;
+package dev.book.global.config.firebase.controller.swagger;
 
 import dev.book.global.config.security.dto.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;

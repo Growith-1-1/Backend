@@ -4,10 +4,8 @@ import dev.book.accountbook.dto.request.AccountBookIncomeRequest;
 import dev.book.accountbook.dto.request.AccountBookListRequest;
 import dev.book.accountbook.dto.request.AccountBookSpendRequest;
 import dev.book.accountbook.dto.request.Repeat;
-import dev.book.accountbook.dto.response.AccountBookIncomeListResponse;
-import dev.book.accountbook.dto.response.AccountBookIncomeResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendListResponse;
-import dev.book.accountbook.dto.response.AccountBookSpendResponse;
+import dev.book.accountbook.dto.response.AccountBookListResponse;
+import dev.book.accountbook.dto.response.AccountBookResponse;
 import dev.book.accountbook.entity.AccountBook;
 import dev.book.accountbook.exception.accountbook.AccountBookErrorException;
 import dev.book.accountbook.repository.AccountBookRepository;
@@ -52,7 +50,10 @@ public class AccountBookServiceIntegrationTest {
     private WebApplicationContext context;
 
     @Autowired
-    private AccountBookService accountBookService;
+    private AccountBookSpendService accountBookSpendService;
+
+    @Autowired
+    private AccountBookIncomeService accountBookIncomeService;
 
     @Autowired
     private UserRepository userRepository;
@@ -126,7 +127,7 @@ public class AccountBookServiceIntegrationTest {
                 "점심 식비", 8000, "김밥천국", null, LocalDate.of(2025, 4, 21), null, "food");
 
         // when
-        AccountBookSpendResponse response = accountBookService.getSpendOne(savedBooks.get(0).getId(), user.getId());
+        AccountBookResponse response = accountBookSpendService.getSpendOne(savedBooks.get(0).getId(), user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
@@ -148,7 +149,7 @@ public class AccountBookServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.getSpendOne(1L, user.getId()))
+        assertThatThrownBy(() -> accountBookSpendService.getSpendOne(1L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 소비내역입니다.");
     }
@@ -161,13 +162,13 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        AccountBookSpendListResponse responses = accountBookService.getSpendList(user.getId(), 1);
+        AccountBookListResponse responses = accountBookSpendService.getSpendList(user.getId(), 1);
 
         // then
-        List<AccountBookSpendResponse> responseList = responses.accountBookSpendResponseList();
+        List<AccountBookResponse> responseList = responses.accountBookResponseList();
         assertThat(responseList).hasSize(8);
         assertThat(responseList)
-                .extracting(AccountBookSpendResponse::title)
+                .extracting(AccountBookResponse::title)
                 .containsExactly("미용실", "옷 쇼핑", "헬스장 등록", "마트 장보기", "술자리", "카페", "점심 식비", "버스비");
         ;
     }
@@ -184,7 +185,7 @@ public class AccountBookServiceIntegrationTest {
                 "핫도그", 3000, "야식", endTime, occurredAt, repeat, "food");
 
         // when
-        AccountBookSpendResponse response = accountBookService.createSpend(request, user);
+        AccountBookResponse response = accountBookSpendService.createSpend(request, user);
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
@@ -209,7 +210,7 @@ public class AccountBookServiceIntegrationTest {
                 "샐러드", 7000, "건강식", LocalDateTime.of(2025, 6, 1, 12, 0), occurredAt, repeat, "food");
 
         // when
-        AccountBookSpendResponse response = accountBookService.modifySpend(modifiedRequest, savedBooks.get(0).getId(), user.getId());
+        AccountBookResponse response = accountBookSpendService.modifySpend(modifiedRequest, savedBooks.get(0).getId(), user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(modifiedRequest.title());
@@ -234,7 +235,7 @@ public class AccountBookServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.modifySpend(modifiedRequest, 1L, user.getId()))
+        assertThatThrownBy(() -> accountBookSpendService.modifySpend(modifiedRequest, 1L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 소비내역입니다.");
     }
@@ -248,7 +249,7 @@ public class AccountBookServiceIntegrationTest {
         Repeat repeat = new Repeat(Frequency.MONTHLY, 3, 15);
 
         // when
-        boolean status = accountBookService.deleteSpend(savedBooks.get(0).getId(), user.getId());
+        boolean status = accountBookSpendService.deleteSpend(savedBooks.get(0).getId(), user.getId());
 
         // then
         assertThat(status).isTrue();
@@ -263,7 +264,7 @@ public class AccountBookServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.deleteSpend(1L, user.getId()))
+        assertThatThrownBy(() -> accountBookSpendService.deleteSpend(1L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 소비내역입니다.");
     }
@@ -279,7 +280,7 @@ public class AccountBookServiceIntegrationTest {
                 "급여", 3000000, "4월 급여", null,  LocalDate.of(2025, 4, 25), repeat, "salary");
 
         // when
-        AccountBookIncomeResponse response = accountBookService.getIncomeOne(savedBooks.get(9).getId(), user.getId());
+        AccountBookResponse response = accountBookIncomeService.getIncomeOne(savedBooks.get(9).getId(), user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
@@ -302,7 +303,7 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when // then
-        assertThatThrownBy(() -> accountBookService.getIncomeOne(1L, user.getId()))
+        assertThatThrownBy(() -> accountBookIncomeService.getIncomeOne(1L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }
@@ -316,13 +317,13 @@ public class AccountBookServiceIntegrationTest {
         AccountBookListRequest listRequest = new AccountBookListRequest(LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30));
 
         // when
-        AccountBookIncomeListResponse responses = accountBookService.getIncomeList(user.getId(), 1);
+        AccountBookListResponse responses = accountBookIncomeService.getIncomeList(user.getId(), 1);
 
         // then
-        List<AccountBookIncomeResponse> responseList = responses.accountBookIncomeResponseList();
+        List<AccountBookResponse> responseList = responses.accountBookResponseList();
         assertThat(responseList).hasSize(3);
         assertThat(responseList)
-                .extracting(AccountBookIncomeResponse::title)
+                .extracting(AccountBookResponse::title)
                 .containsExactly("이체", "급여", "저축");
     }
 
@@ -337,7 +338,7 @@ public class AccountBookServiceIntegrationTest {
                 "월급", 3000000, "회사 월급", endTime, occurredAt, repeat, "salary");
 
         // when
-        AccountBookIncomeResponse response = accountBookService.createIncome(request, user);
+        AccountBookResponse response = accountBookIncomeService.createIncome(request, user);
 
         // then
         assertThat(response.title()).isEqualTo(request.title());
@@ -361,7 +362,7 @@ public class AccountBookServiceIntegrationTest {
                 "보너스", 2000000, "성과급", endTime, occurredAt, repeat, "salary");
 
         // when
-        AccountBookIncomeResponse response = accountBookService.modifyIncome(savedBooks.get(8).getId(), modifiedRequest, user.getId());
+        AccountBookResponse response = accountBookIncomeService.modifyIncome(savedBooks.get(8).getId(), modifiedRequest, user.getId());
 
         // then
         assertThat(response.title()).isEqualTo(modifiedRequest.title());
@@ -385,7 +386,7 @@ public class AccountBookServiceIntegrationTest {
                 "보너스", 2000000, "성과급", endTime, occurredAt, repeat, "salary");
 
         // when // then
-        assertThatThrownBy(() -> accountBookService.modifyIncome(1L, modifiedRequest, user.getId()))
+        assertThatThrownBy(() -> accountBookIncomeService.modifyIncome(1L, modifiedRequest, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }
@@ -398,7 +399,7 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        boolean status = accountBookService.deleteIncome(savedBooks.get(8).getId(), user.getId());
+        boolean status = accountBookIncomeService.deleteIncome(savedBooks.get(8).getId(), user.getId());
 
         // then
         assertThat(status).isTrue();
@@ -413,7 +414,7 @@ public class AccountBookServiceIntegrationTest {
 
         // when
         // then
-        assertThatThrownBy(() -> accountBookService.deleteIncome(0L, user.getId()))
+        assertThatThrownBy(() -> accountBookIncomeService.deleteIncome(0L, user.getId()))
                 .isInstanceOf(AccountBookErrorException.class)
                 .hasMessage("존재하지 않는 수입내역입니다.");
     }
@@ -426,10 +427,10 @@ public class AccountBookServiceIntegrationTest {
         UserEntity user = userDetails.user();
 
         // when
-        AccountBookSpendListResponse foodResponses = accountBookService.getCategorySpendList("food", user.getId(), 1);
+        AccountBookListResponse foodResponses = accountBookSpendService.getCategorySpendList("food", user.getId(), 1);
 
         // then
-        List<AccountBookSpendResponse> responseList = foodResponses.accountBookSpendResponseList();
+        List<AccountBookResponse> responseList = foodResponses.accountBookResponseList();
         assertThat(responseList).hasSize(1);
         assertThat(responseList.get(0).title()).isEqualTo("점심 식비");
         assertThat(responseList.get(0).category()).isEqualTo("식비");
