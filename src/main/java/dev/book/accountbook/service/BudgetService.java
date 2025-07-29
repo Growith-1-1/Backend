@@ -27,11 +27,11 @@ public class BudgetService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
-    public BudgetResponse getBudget(Long userId, int month) {
+    public BudgetResponse getBudget(Long userId, LocalDate localDate) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
-        Budget budget = budgetRepository.findByMonthAndUserId(month, user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
+        Budget budget = budgetRepository.findByMonthAndUserId(localDate.getMonthValue(), user.getId()).orElseThrow(() -> new AccountBookErrorException(AccountBookErrorCode.NOT_FOUND_BUDGET));
 
-        return budgetRepository.findBudgetWithTotal(budget.getId());
+        return budgetRepository.findBudgetWithTotal(budget.getId(), localDate);
     }
 
     @Transactional
@@ -44,7 +44,7 @@ public class BudgetService {
 
         eventPublisher.publishEvent(new CreateBudgetEvent(userEntity));
 
-        return budgetRepository.findBudgetWithTotal(budget.getId());
+        return budgetRepository.findBudgetWithTotal(budget.getId(), LocalDate.now());
     }
 
     @Transactional
@@ -53,7 +53,7 @@ public class BudgetService {
         budget.modifyBudget(budgetRequest.budget());
         budgetRepository.flush();
 
-        return budgetRepository.findBudgetWithTotal(budget.getId());
+        return budgetRepository.findBudgetWithTotal(budget.getId(), LocalDate.now());
     }
 
     @Transactional

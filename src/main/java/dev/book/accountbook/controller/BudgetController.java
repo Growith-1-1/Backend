@@ -22,8 +22,7 @@ public class BudgetController implements BudgetApi {
     @GetMapping
     public ResponseEntity<BudgetResponse> getBudget(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate date) {
         Long userId = userDetails.user().getId();
-        int month = date.getMonthValue();
-        BudgetResponse response = budgetService.getBudget(userId, month);
+        BudgetResponse response = budgetService.getBudget(userId, date);
 
         return ResponseEntity.ok(response);
     }
