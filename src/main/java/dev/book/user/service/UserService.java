@@ -1,9 +1,10 @@
 package dev.book.user.service;
 
-import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.achievement.achievement_user.entity.AchievementUser;
 import dev.book.achievement.achievement_user.repository.AchievementUserRepository;
+import dev.book.achievement.achievement_user.service.IndividualAchievementStatusService;
 import dev.book.global.config.security.dto.CustomUserDetails;
+import dev.book.global.config.security.jwt.JwtAuthenticationToken;
 import dev.book.global.config.security.jwt.JwtUtil;
 import dev.book.global.config.security.service.refresh.RefreshTokenService;
 import dev.book.global.entity.Category;
@@ -24,9 +25,14 @@ import dev.book.user.user_category.UserCategory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +41,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserDetailsService userDetailsService;
     private final CategoryRepository categoryRepository;
     private final AchievementUserRepository achievementUserRepository;
 
@@ -121,7 +128,7 @@ public class UserService {
     @Transactional
     public void deleteUserNickname(CustomUserDetails userDetails) {
         UserEntity user = userRepository.findByEmail(userDetails.getUsername())
-                        .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
         user.deleteNickname();
     }
 
@@ -165,5 +172,19 @@ public class UserService {
         UserEntity user = userDetails.user();
         return new UserChallengeInfoResponse(user.getSavings(), user.getCompletedChallenges(),
                 user.getParticipatingChallenges(), user.getFinishedChallenge());
+    }
+
+    public void login(HttpServletResponse response) throws IOException {
+        UserEntity user = userRepository.findByEmail("test@sample.com").orElseThrow(() -> new UserErrorException(UserErrorCode.USER_NOT_FOUND));
+
+        jwtUtil.generateToken(response, getAuthentication(user));
+    }
+
+    private Authentication getAuthentication(UserEntity user) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        Authentication authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return authentication;
     }
 }
