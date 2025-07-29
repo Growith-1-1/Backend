@@ -80,7 +80,7 @@
     </root>
 
     <!-- FCM 전용 로거 -->
-    <logger name="dev.book.global.config.Firebase.service.FCMService" level="INFO" additivity="false">
+    <logger name="dev.book.global.config.firebase.service.FCMService" level="INFO" additivity="false">
         <appender-ref ref="FCM_FILE"/>
     </logger>
 
